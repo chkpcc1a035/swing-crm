@@ -9,7 +9,8 @@ on:
 env:
   PROJECT_ID: swing-cms-449317
   IMAGE: swing-cms
-  REGISTRY: gcr.io
+  REGISTRY: us-docker.pkg.dev
+  REPOSITORY: swing
 
 jobs:
   build-and-push:
@@ -33,11 +34,11 @@ jobs:
       - name: Build Docker image
         run: |
           docker build \
-            --tag "$REGISTRY/$PROJECT_ID/$IMAGE:${{ github.sha }}" \
-            --tag "$REGISTRY/$PROJECT_ID/$IMAGE:latest" \
+            --tag "$REGISTRY/$PROJECT_ID/$REPOSITORY/$IMAGE:${{ github.sha }}" \
+            --tag "$REGISTRY/$PROJECT_ID/$REPOSITORY/$IMAGE:latest" \
             .
 
-      - name: Push Docker image to GCR
+      - name: Push Docker image
         run: |
-          docker push "$REGISTRY/$PROJECT_ID/$IMAGE:${{ github.sha }}"
-          docker push "$REGISTRY/$PROJECT_ID/$IMAGE:latest"
+          docker push "$REGISTRY/$PROJECT_ID/$REPOSITORY/$IMAGE:${{ github.sha }}"
+          docker push "$REGISTRY/$PROJECT_ID/$REPOSITORY/$IMAGE:latest"
