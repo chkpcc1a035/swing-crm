@@ -50,3 +50,16 @@ jobs:
         run: |
           docker push "$REGISTRY/$PROJECT_ID/$REPOSITORY/$IMAGE:${{ github.sha }}"
           docker push "$REGISTRY/$PROJECT_ID/$REPOSITORY/$IMAGE:latest"
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy swing-cms \
+            --image=$REGISTRY/$PROJECT_ID/$REPOSITORY/$IMAGE:${{ github.sha }} \
+            --platform=managed \
+            --region=asia-east1 \
+            --service-account=github-actions-sa@swing-cms-449317.iam.gserviceaccount.com \
+            --port=3000 \
+            --memory=512Mi \
+            --cpu=1000m \
+            --allow-unauthenticated \
+            --project=$PROJECT_ID
