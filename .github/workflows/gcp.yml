@@ -1,0 +1,43 @@
+name: Build and Push to GCR
+
+on:
+  push:
+    branches: [nextjs] # or your default branch
+  pull_request:
+    branches: [nextjs]
+
+env:
+  PROJECT_ID: swing-cms-449317
+  IMAGE: swing-cms
+  REGISTRY: gcr.io
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - id: "auth"
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for GCP
+        run: gcloud auth configure-docker
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            --tag "$REGISTRY/$PROJECT_ID/$IMAGE:${{ github.sha }}" \
+            --tag "$REGISTRY/$PROJECT_ID/$IMAGE:latest" \
+            .
+
+      - name: Push Docker image to GCR
+        run: |
+          docker push "$REGISTRY/$PROJECT_ID/$IMAGE:${{ github.sha }}"
+          docker push "$REGISTRY/$PROJECT_ID/$IMAGE:latest"
