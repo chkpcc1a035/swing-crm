@@ -9,7 +9,7 @@ on:
 env:
   PROJECT_ID: swing-cms-449317
   IMAGE: swing-cms
-  REGISTRY: us-docker.pkg.dev
+  REGISTRY: asia-east2-docker.pkg.dev
   REPOSITORY: swing
 
 jobs:
@@ -30,7 +30,7 @@ jobs:
 
       - name: Configure Docker for Artifact Registry
         run: |
-          gcloud auth configure-docker us-docker.pkg.dev
+          gcloud auth configure-docker asia-east2-docker.pkg.dev
 
       - name: Build Docker image
         run: |
