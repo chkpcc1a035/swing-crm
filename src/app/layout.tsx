@@ -1,3 +1,5 @@
+"use client";
+
 import { Metadata } from "next";
 import { MantineProvider } from "@mantine/core";
 import { AuthProvider } from "@/contexts/AuthContext";

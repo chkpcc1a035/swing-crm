@@ -21,6 +21,11 @@ export async function middleware(req: NextRequest) {
     // Get the pathname from the URL
     const path = req.nextUrl.pathname;
 
+    // Skip auth check for RSC requests
+    if (req.headers.get("RSC") === "1") {
+      return res;
+    }
+
     // If there's no session and we're not already on /login
     if (!session && path !== "/login") {
       const redirectUrl = new URL("/login", req.url);
