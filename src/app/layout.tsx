@@ -4,6 +4,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import Dashboard from "@/components/Dashboard";
 import { I18nProvider } from "@/contexts/i18nProvider";
 import "@mantine/core/styles.css";
+import { usePathname } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "SKU Manager",
@@ -15,13 +16,16 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+  const isLoginPage = pathname === "/login";
+
   return (
     <html lang="en">
       <body>
         <MantineProvider defaultColorScheme="light">
           <I18nProvider>
             <AuthProvider>
-              <Dashboard>{children}</Dashboard>
+              {isLoginPage ? children : <Dashboard>{children}</Dashboard>}
             </AuthProvider>
           </I18nProvider>
         </MantineProvider>

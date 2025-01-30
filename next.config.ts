@@ -15,6 +15,10 @@ const nextConfig = {
     ],
   },
   output: "standalone",
+  experimental: {
+    outputFileTracingRoot: undefined,
+  },
+  generateEtags: false,
 };
 
 export default nextConfig;
