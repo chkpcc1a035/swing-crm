@@ -2,6 +2,11 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
+  output: "standalone",
+  experimental: {
+    outputFileTracingRoot: undefined,
+  },
+  generateEtags: false,
   images: {
     remotePatterns: [
       {
@@ -10,6 +15,22 @@ const nextConfig = {
         pathname: "/storage/v1/object/sign/products/**",
       },
     ],
+  },
+  basePath: "",
+  trailingSlash: false,
+  async rewrites() {
+    return {
+      beforeFiles: [
+        {
+          source: "/login",
+          destination: "/login/page",
+        },
+        {
+          source: "/:path*",
+          destination: "/:path*",
+        },
+      ],
+    };
   },
 };
 
