@@ -46,7 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
     setIsAuthenticated(false);
     console.log("[AuthContext] User logged out successfully");
-    router.replace("/login");
+    router.push("/login");
   };
 
   useEffect(() => {
@@ -61,9 +61,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         // Use router.replace instead of window.location
         if (!session && pathname !== "/login") {
-          router.replace("/login");
+          router.push("/login");
         } else if (session && pathname === "/login") {
-          router.replace("/inventory");
+          router.push("/inventory");
         }
       } catch (error) {
         console.error("[AuthContext] Error:", error);
@@ -80,9 +80,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsAuthenticated(!!session);
 
       if (!session && pathname !== "/login") {
-        router.replace("/login");
+        router.push("/login");
       } else if (session && pathname === "/login") {
-        router.replace("/inventory");
+        router.push("/inventory");
       }
     });
 
