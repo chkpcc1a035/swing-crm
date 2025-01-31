@@ -26,15 +26,18 @@ export async function middleware(req: NextRequest) {
       return res;
     }
 
+    // Create absolute URLs for redirects
+    const baseUrl = req.nextUrl.origin;
+
     // If there's no session and we're not already on /login
     if (!session && path !== "/login") {
-      const redirectUrl = new URL("/login", req.url);
+      const redirectUrl = new URL("/login", baseUrl);
       return NextResponse.redirect(redirectUrl);
     }
 
     // If there's a session and we're on /login
     if (session && path === "/login") {
-      const redirectUrl = new URL("/inventory", req.url);
+      const redirectUrl = new URL("/inventory", baseUrl);
       return NextResponse.redirect(redirectUrl);
     }
 

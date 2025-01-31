@@ -18,6 +18,9 @@ const nextConfig = {
     NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY:
       process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY,
   },
+  basePath: process.env.NODE_ENV === "production" ? "" : "",
+  assetPrefix: process.env.NODE_ENV === "production" ? "" : "",
+  trailingSlash: false,
   // ...
 };
 
