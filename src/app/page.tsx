@@ -1,10 +1,23 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { Container, Title, Text, Center } from "@mantine/core";
 
 export default function HomePage() {
+  const router = useRouter();
   const { isAuthenticated, isLoading } = useAuth();
+
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      console.log("HomePage: Redirecting to inventory, auth state:", {
+        isAuthenticated,
+        isLoading,
+      });
+      router.replace("/inventory");
+    }
+  }, [isAuthenticated, isLoading, router]);
 
   if (isLoading || isAuthenticated) {
     return null;

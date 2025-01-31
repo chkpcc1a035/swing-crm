@@ -46,7 +46,12 @@ export default function LoginPage() {
       isAuthenticated,
       isLoading,
     });
-  }, [isAuthenticated, isLoading]);
+    if (!isLoading && isAuthenticated) {
+      console.log("LoginPage: Authenticated, redirecting to inventory");
+      router.replace("/inventory");
+      router.refresh();
+    }
+  }, [isAuthenticated, isLoading, router]);
 
   if (isLoading) {
     console.log("LoginPage: Loading, returning null");
@@ -77,6 +82,7 @@ export default function LoginPage() {
       });
     }
   };
+
   const handleGoogleLogin = async () => {
     console.log("Initiating Google OAuth login");
     try {
@@ -140,6 +146,7 @@ export default function LoginPage() {
               Sign in
             </Button>
           </form>
+
           <Divider label="Or continue with" labelPosition="center" my="lg" />
 
           <Group grow mb="md" mt="md">

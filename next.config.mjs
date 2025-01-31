@@ -18,20 +18,20 @@ const nextConfig = {
   },
   basePath: "",
   trailingSlash: false,
-  // async rewrites() {
-  //   return {
-  //     beforeFiles: [
-  //       {
-  //         source: "/login",
-  //         destination: "/login/page",
-  //       },
-  //       {
-  //         source: "/:path*",
-  //         destination: "/:path*",
-  //       },
-  //     ],
-  //   };
-  // },
+  async rewrites() {
+    return {
+      beforeFiles: [
+        {
+          source: "/login",
+          destination: "/login/page",
+        },
+        {
+          source: "/:path*",
+          destination: "/:path*",
+        },
+      ],
+    };
+  },
 };
 
 export default nextConfig;

@@ -10,7 +10,7 @@ import {
   useEffect,
 } from "react";
 import { createClient } from "@/utils/supabase/client";
-// import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -24,8 +24,8 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  // const router = useRouter();
-  // const pathname = usePathname();
+  const router = useRouter();
+  const pathname = usePathname();
   const supabase = createClient();
 
   const login = async (email: string, password: string) => {
@@ -46,7 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
     setIsAuthenticated(false);
     console.log("[AuthContext] User logged out successfully");
-    // router.replace("/login");
+    router.replace("/login");
   };
 
   useEffect(() => {
@@ -56,14 +56,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const {
           data: { session },
         } = await supabase.auth.getSession();
+
         setIsAuthenticated(!!session);
 
         // Use router.replace instead of window.location
-        // if (!session && pathname !== "/login") {
-        //   router.replace("/login");
-        // } else if (session && pathname === "/login") {
-        //   router.replace("/inventory");
-        // }
+        if (!session && pathname !== "/login") {
+          router.replace("/login");
+        } else if (session && pathname === "/login") {
+          router.replace("/inventory");
+        }
       } catch (error) {
         console.error("[AuthContext] Error:", error);
       } finally {
@@ -78,16 +79,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } = supabase.auth.onAuthStateChange((event, session) => {
       setIsAuthenticated(!!session);
 
-      // if (!session && pathname !== "/login") {
-      //   router.replace("/login");
-      // } else if (session && pathname === "/login") {
-      //   router.replace("/inventory");
-      // }
+      if (!session && pathname !== "/login") {
+        router.replace("/login");
+      } else if (session && pathname === "/login") {
+        router.replace("/inventory");
+      }
     });
 
     return () => subscription.unsubscribe();
-    // }, [pathname, router]);
-  }, []);
+  }, [pathname, router]);
 
   return (
     <AuthContext.Provider value={{ isAuthenticated, isLoading, login, logout }}>

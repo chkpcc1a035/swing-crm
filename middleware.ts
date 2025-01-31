@@ -22,21 +22,21 @@ export async function middleware(req: NextRequest) {
     const path = req.nextUrl.pathname;
 
     // Skip auth check for RSC requests
-    // if (req.headers.get("RSC") === "1") {
-    //   return res;
-    // }
+    if (req.headers.get("RSC") === "1") {
+      return res;
+    }
 
     // If there's no session and we're not already on /login
-    // if (!session && path !== "/login") {
-    //   const redirectUrl = new URL("/login", req.url);
-    //   return NextResponse.redirect(redirectUrl);
-    // }
+    if (!session && path !== "/login") {
+      const redirectUrl = new URL("/login", req.url);
+      return NextResponse.redirect(redirectUrl);
+    }
 
-    // // If there's a session and we're on /login
-    // if (session && path === "/login") {
-    //   const redirectUrl = new URL("/inventory", req.url);
-    //   return NextResponse.redirect(redirectUrl);
-    // }
+    // If there's a session and we're on /login
+    if (session && path === "/login") {
+      const redirectUrl = new URL("/inventory", req.url);
+      return NextResponse.redirect(redirectUrl);
+    }
 
     return res;
   } catch (error) {
