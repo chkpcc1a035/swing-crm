@@ -19,6 +19,7 @@ WORKDIR /app
 ARG NEXT_PUBLIC_SUPABASE_URL
 ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
 ARG SUPABASE_SERVICE_ROLE_KEY
+ARG GOOGLE_APPLICATION_CREDENTIALS_JSON
 
 # Set environment variables for build time
 ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL
@@ -45,6 +46,7 @@ ENV NEXT_TELEMETRY_DISABLED 1
 ARG NEXT_PUBLIC_SUPABASE_URL
 ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
 ARG SUPABASE_SERVICE_ROLE_KEY
+ARG GOOGLE_APPLICATION_CREDENTIALS_JSON
 
 # Set environment variables for runtime
 ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL
@@ -54,6 +56,19 @@ ENV SUPABASE_SERVICE_ROLE_KEY=$SUPABASE_SERVICE_ROLE_KEY
 # Create a non-root user
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
+
+# Create directory for service account key
+RUN mkdir -p /app/config && \
+    chown nextjs:nodejs /app/config
+
+# Set up the service account key if provided
+RUN if [ -n "$GOOGLE_APPLICATION_CREDENTIALS_JSON" ]; then \
+    echo "$GOOGLE_APPLICATION_CREDENTIALS_JSON" > /app/config/google-credentials.json; \
+    chown nextjs:nodejs /app/config/google-credentials.json; \
+    chmod 600 /app/config/google-credentials.json; \
+    fi
+
+ENV GOOGLE_APPLICATION_CREDENTIALS=/app/config/google-credentials.json
 
 # Copy standalone directory and required files
 COPY --from=builder /app/public ./public
