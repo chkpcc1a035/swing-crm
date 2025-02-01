@@ -21,6 +21,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { notifications } from "@mantine/notifications";
 import { useEffect } from "react";
+import { logToCloud } from "@/utils/logging";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -61,6 +62,12 @@ export default function LoginPage() {
       router.refresh();
       console.log("[LoginPage] Router.refresh called");
     }
+
+    logToCloud("info", "[LoginPage] Page rendered", {
+      isAuthenticated,
+      isLoading,
+      pathname: window?.location?.pathname,
+    });
   }, [isAuthenticated, isLoading, router]);
 
   if (isLoading) {
@@ -74,17 +81,33 @@ export default function LoginPage() {
   }
 
   const handleSubmit = async (values: typeof form.values) => {
+    await logToCloud("info", "[LoginPage] Login attempt", {
+      email: values.email,
+    });
+
     console.log("[LoginPage] Login attempt with email:", values.email);
     try {
       const success = await login(values.email, values.password);
-      console.log("[LoginPage] Login attempt result:", success);
+
+      await logToCloud("info", "[LoginPage] Login result", {
+        success,
+      });
 
       if (success) {
+        await logToCloud(
+          "info",
+          "[LoginPage] Redirecting after successful login"
+        );
         console.log("[LoginPage] Login successful, navigating to /inventory");
         window.location.href = "/inventory";
         console.log("[LoginPage] Navigation initiated");
       }
     } catch (error) {
+      await logToCloud("error", "[LoginPage] Login error", {
+        error: error instanceof Error ? error.message : "Unknown error",
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+
       console.error("[LoginPage] Login error:", error);
       notifications.show({
         title: "Error",

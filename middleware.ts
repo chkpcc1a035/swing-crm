@@ -3,6 +3,7 @@
 import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { logToCloud } from "@/utils/logging";
 
 // middleware.ts
 export const config = {
@@ -11,14 +12,10 @@ export const config = {
 
 export async function middleware(req: NextRequest) {
   try {
-    console.log(
-      "[Middleware] Processing request for path:",
-      req.nextUrl.pathname
-    );
-    console.log(
-      "[Middleware] Request headers:",
-      Object.fromEntries(req.headers)
-    );
+    await logToCloud("info", "[Middleware] Processing request", {
+      path: req.nextUrl.pathname,
+      headers: Object.fromEntries(req.headers),
+    });
 
     const res = NextResponse.next();
     const supabase = createMiddlewareClient({ req, res });
@@ -27,42 +24,43 @@ export async function middleware(req: NextRequest) {
       data: { session },
     } = await supabase.auth.getSession();
 
-    console.log("[Middleware] Session exists:", !!session);
+    await logToCloud("info", "[Middleware] Session check", {
+      hasSession: !!session,
+      path: req.nextUrl.pathname,
+    });
 
-    const path = req.nextUrl.pathname;
-    console.log("[Middleware] Current path:", path);
-
-    // Skip auth check for RSC requests
     if (req.headers.get("RSC") === "1") {
-      console.log("[Middleware] RSC request detected, skipping auth check");
+      await logToCloud("info", "[Middleware] RSC request detected", {
+        path: req.nextUrl.pathname,
+      });
       return res;
     }
 
-    // Create absolute URLs for redirects
     const baseUrl = req.nextUrl.origin;
-    console.log("[Middleware] Base URL:", baseUrl);
 
-    // If there's no session and we're not already on /login
-    if (!session && path !== "/login") {
-      console.log("[Middleware] No session, redirecting to /login");
+    if (!session && req.nextUrl.pathname !== "/login") {
+      await logToCloud("info", "[Middleware] Redirecting to login", {
+        from: req.nextUrl.pathname,
+        reason: "no_session",
+      });
       const redirectUrl = new URL("/login", baseUrl);
       return NextResponse.redirect(redirectUrl);
     }
 
-    // If there's a session and we're on /login
-    if (session && path === "/login") {
-      console.log(
-        "[Middleware] Session exists on login page, redirecting to /inventory"
-      );
+    if (session && req.nextUrl.pathname === "/login") {
+      await logToCloud("info", "[Middleware] Redirecting to inventory", {
+        reason: "already_authenticated",
+      });
       const redirectUrl = new URL("/inventory", baseUrl);
       return NextResponse.redirect(redirectUrl);
     }
 
-    console.log("[Middleware] Allowing request to continue");
     return res;
   } catch (error) {
-    console.error("[Middleware] Error:", error);
-    // In case of error, allow the request to continue
+    await logToCloud("error", "[Middleware] Error", {
+      error: error instanceof Error ? error.message : "Unknown error",
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return NextResponse.next();
   }
 }

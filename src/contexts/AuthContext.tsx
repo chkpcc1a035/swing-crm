@@ -11,6 +11,7 @@ import {
 } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter, usePathname } from "next/navigation";
+import { logToCloud } from "@/utils/logging";
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -29,54 +30,67 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const supabase = createClient();
 
   const login = async (email: string, password: string) => {
-    console.log("[AuthContext][login] Attempting login for:", email);
-    console.log("[AuthContext][login] Current pathname:", pathname);
+    await logToCloud("info", "[AuthContext] Login attempt", {
+      email,
+      pathname,
+    });
+
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
-    console.log(
-      "[AuthContext][login] Login result:",
-      error ? `Error: ${error.message}` : "Success"
-    );
+
+    await logToCloud(error ? "error" : "info", "[AuthContext] Login result", {
+      success: !error,
+      error: error?.message,
+    });
+
     return !error;
   };
 
   const logout = async () => {
-    console.log("[AuthContext][logout] Starting logout process");
-    console.log("[AuthContext][logout] Current pathname:", pathname);
+    await logToCloud("info", "[AuthContext] Logout initiated", {
+      pathname,
+    });
+
     await supabase.auth.signOut();
     setIsAuthenticated(false);
-    console.log("[AuthContext][logout] User logged out, redirecting to /login");
+
+    await logToCloud("info", "[AuthContext] Logout completed");
     router.push("/login");
   };
 
   useEffect(() => {
     const initAuth = async () => {
-      console.log("[AuthContext][initAuth] Starting auth initialization");
-      console.log("[AuthContext][initAuth] Current pathname:", pathname);
+      await logToCloud("info", "[AuthContext] Initializing auth", {
+        pathname,
+      });
+
       try {
         setIsLoading(true);
         const {
           data: { session },
         } = await supabase.auth.getSession();
 
-        console.log("[AuthContext][initAuth] Session status:", !!session);
         setIsAuthenticated(!!session);
 
         if (!session && pathname !== "/login") {
-          console.log(
-            "[AuthContext][initAuth] No session, redirecting to /login"
-          );
+          await logToCloud("info", "[AuthContext] Redirecting to login", {
+            reason: "no_session",
+            from: pathname,
+          });
           router.push("/login");
         } else if (session && pathname === "/login") {
-          console.log(
-            "[AuthContext][initAuth] Has session, redirecting to /inventory"
-          );
+          await logToCloud("info", "[AuthContext] Redirecting to inventory", {
+            reason: "already_authenticated",
+          });
           router.push("/inventory");
         }
       } catch (error) {
-        console.error("[AuthContext][initAuth] Error:", error);
+        await logToCloud("error", "[AuthContext] Initialization error", {
+          error: error instanceof Error ? error.message : "Unknown error",
+          stack: error instanceof Error ? error.stack : undefined,
+        });
       } finally {
         setIsLoading(false);
       }
@@ -86,23 +100,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("[AuthContext][onAuthStateChange] Auth event:", event);
-      console.log(
-        "[AuthContext][onAuthStateChange] Current pathname:",
-        pathname
-      );
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      await logToCloud("info", "[AuthContext] Auth state changed", {
+        event,
+        hasSession: !!session,
+        pathname,
+      });
+
       setIsAuthenticated(!!session);
 
       if (!session && pathname !== "/login") {
-        console.log(
-          "[AuthContext][onAuthStateChange] No session, redirecting to /login"
-        );
+        await logToCloud("info", "[AuthContext] Redirecting to login", {
+          reason: "auth_state_change",
+        });
         router.push("/login");
       } else if (session && pathname === "/login") {
-        console.log(
-          "[AuthContext][onAuthStateChange] Has session, redirecting to /inventory"
-        );
+        await logToCloud("info", "[AuthContext] Redirecting to inventory", {
+          reason: "auth_state_change",
+        });
         router.push("/inventory");
       }
     });
