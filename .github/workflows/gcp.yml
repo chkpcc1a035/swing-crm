@@ -2,9 +2,9 @@ name: Build and Push to GCR
 
 on:
   push:
-    branches: [nextjs] # or your default branch
+    branches: [nextjs-page] # or your default branch
   pull_request:
-    branches: [nextjs]
+    branches: [nextjs-page]
 
 env:
   PROJECT_ID: swing-cms-449317
