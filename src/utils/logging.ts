@@ -1,24 +1,40 @@
-import { Logging } from "@google-cloud/logging";
+type LogSeverity = "info" | "error" | "warn" | "debug";
 
-const logging = new Logging();
-const log = logging.log("sku-manager-routing");
+// Simple function to format the log message
+function formatLog(severity: LogSeverity, message: string, metadata: any = {}) {
+  return {
+    timestamp: new Date().toISOString(),
+    severity: severity.toUpperCase(),
+    message,
+    ...metadata,
+    environment: process.env.NODE_ENV,
+  };
+}
 
+// Client-side logging
 export async function logToCloud(
-  severity: string,
+  severity: LogSeverity,
   message: string,
   metadata: any = {}
 ) {
-  try {
-    const entry = log.entry({
-      severity: severity.toUpperCase(),
-      message: message,
-      ...metadata,
-    });
+  const logData = formatLog(severity, message, metadata);
 
-    await log.write(entry);
-  } catch (error) {
-    console.error("Failed to write to Cloud Logging:", error);
-    // Fallback to console
-    console.log(`[${severity.toUpperCase()}] ${message}`, metadata);
+  // Log to console
+  const consoleMethod = severity === "error" ? console.error : console.log;
+  consoleMethod(`[${severity.toUpperCase()}] ${message}`, metadata);
+
+  // If in production, send to your logging API endpoint
+  if (process.env.NODE_ENV === "production") {
+    try {
+      await fetch("/api/log", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(logData),
+      });
+    } catch (error) {
+      console.error("Failed to send log to API:", error);
+    }
   }
 }
