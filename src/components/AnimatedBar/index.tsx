@@ -1,11 +1,10 @@
 import { useState } from "react";
-import { ActionIcon, Group, Divider, Box, rem, Tooltip } from "@mantine/core";
-import { IconPlus, IconDownload, IconUpload } from "@tabler/icons-react";
-import { keyframes } from "@emotion/react";
-import { RxCross1, RxFilePlus } from "react-icons/rx";
+import { ActionIcon, Group, Box, rem, Tooltip } from "@mantine/core";
 import { BsFiletypeCsv } from "react-icons/bs";
-import { TbRefresh } from "react-icons/tb";
+import { RxCross1, RxFilePlus } from "react-icons/rx";
+import { IconDownload } from "@tabler/icons-react";
 import { VscRefresh } from "react-icons/vsc";
+import { keyframes } from "@emotion/react";
 
 const fadeInUp = keyframes({
   from: {
@@ -24,23 +23,9 @@ const ExpandedActionBar = () => {
   const handleIconClick = (action: string) => (e: React.MouseEvent) => {
     e.stopPropagation();
     console.log(`Clicked ${action} button`);
-    // Add your action handlers here
-    switch (action) {
-      case "edit":
-        console.log("Editing item...");
-        break;
-      case "delete":
-        console.log("Deleting item...");
-        break;
-      case "download":
-        console.log("Downloading item...");
-        break;
-      case "upload":
-        console.log("Uploading item...");
-        break;
-      case "close":
-        setIsExpanded(false);
-        break;
+
+    if (action === "close") {
+      setIsExpanded(false);
     }
   };
 
@@ -65,9 +50,8 @@ const ExpandedActionBar = () => {
   ];
 
   return (
-    <ActionIcon
-      variant="filled"
-      color="green"
+    <Box
+      component="div"
       onClick={() => setIsExpanded(!isExpanded)}
       style={{
         width: isExpanded ? rem(384) : rem(64),
@@ -76,6 +60,8 @@ const ExpandedActionBar = () => {
         transition: "all 300ms cubic-bezier(0.4, 0, 0.2, 1)",
         position: "relative",
         overflow: "hidden",
+        backgroundColor: "var(--mantine-color-green-filled)",
+        cursor: "pointer",
       }}
     >
       <Group
@@ -90,64 +76,26 @@ const ExpandedActionBar = () => {
         }}
       >
         {icons.map(({ Icon, label, tooltip }, index) => (
-          <Box
-            key={label}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "16px",
-              animation: isExpanded
-                ? `${fadeInUp} 300ms cubic-bezier(0.4, 0, 0.2, 1) forwards`
-                : "none",
-              animationDelay: `${index * 50}ms`,
-            }}
-          >
-            <Tooltip label={tooltip} position="bottom">
-              <ActionIcon
-                variant="transparent"
-                color="white"
-                size={42}
-                onClick={handleIconClick(label)}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  cursor: "pointer",
-                  padding: "8px",
-                  transition: "background-color 0.2s ease",
-                  "&:hover": {
-                    backgroundColor: "rgba(255, 255, 255, 0.1)",
-                  },
-                }}
-              >
-                <Icon size={24} stroke="1.5" />
-              </ActionIcon>
-            </Tooltip>
-            {index < icons.length - 1 && (
-              <Divider
-                orientation="vertical"
-                color="gray.1"
-                style={{
-                  height: rem(40),
-                }}
-              />
-            )}
-          </Box>
+          <Tooltip key={label} label={tooltip} position="bottom">
+            <Box
+              component="div"
+              onClick={handleIconClick(label.toLowerCase())}
+              style={{
+                color: "white",
+                cursor: "pointer",
+                animationName: isExpanded ? fadeInUp.name : "none",
+                animationDuration: "300ms",
+                animationTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
+                animationFillMode: "forwards",
+                animationDelay: isExpanded ? `${index * 50}ms` : "0ms",
+              }}
+            >
+              <Icon size={24} />
+            </Box>
+          </Tooltip>
         ))}
       </Group>
-      <IconPlus
-        size={32}
-        style={{
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          opacity: isExpanded ? 0 : 1,
-          transition: "opacity 200ms ease",
-          pointerEvents: isExpanded ? "none" : "auto",
-        }}
-      />
-    </ActionIcon>
+    </Box>
   );
 };
 

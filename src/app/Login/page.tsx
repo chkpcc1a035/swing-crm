@@ -27,7 +27,11 @@ export default function LoginPage() {
   const { login, isAuthenticated, isLoading } = useAuth();
   const supabase = createClient();
 
-  console.log("LoginPage render - Auth state:", { isAuthenticated, isLoading });
+  console.log("[LoginPage] Render - Auth state:", {
+    isAuthenticated,
+    isLoading,
+    currentPath: window?.location?.pathname,
+  });
 
   const form = useForm({
     initialValues: {
@@ -42,14 +46,20 @@ export default function LoginPage() {
   });
 
   useEffect(() => {
-    console.log("LoginPage: Auth state changed:", {
+    console.log("[LoginPage] useEffect - Auth state changed:", {
       isAuthenticated,
       isLoading,
+      currentPath: window?.location?.pathname,
     });
+
     if (!isLoading && isAuthenticated) {
-      console.log("LoginPage: Authenticated, redirecting to inventory");
+      console.log(
+        "[LoginPage] Authenticated user detected, redirecting to /inventory"
+      );
       router.replace("/inventory");
+      console.log("[LoginPage] Router.replace called");
       router.refresh();
+      console.log("[LoginPage] Router.refresh called");
     }
   }, [isAuthenticated, isLoading, router]);
 
@@ -64,17 +74,18 @@ export default function LoginPage() {
   }
 
   const handleSubmit = async (values: typeof form.values) => {
-    console.log("Attempting login with email:", values.email);
+    console.log("[LoginPage] Login attempt with email:", values.email);
     try {
       const success = await login(values.email, values.password);
-      console.log("Login attempt result:", success);
+      console.log("[LoginPage] Login attempt result:", success);
 
       if (success) {
-        console.log("Login successful, navigating to inventory");
+        console.log("[LoginPage] Login successful, navigating to /inventory");
         window.location.href = "/inventory";
+        console.log("[LoginPage] Navigation initiated");
       }
     } catch (error) {
-      console.error("Login error:", error);
+      console.error("[LoginPage] Login error:", error);
       notifications.show({
         title: "Error",
         message: (error as Error).message,
