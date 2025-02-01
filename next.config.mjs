@@ -16,7 +16,8 @@ const nextConfig = {
       },
     ],
   },
-  basePath: "",
+  basePath: process.env.NODE_ENV === "production" ? "" : "",
+  assetPrefix: process.env.NODE_ENV === "production" ? "" : "",
   trailingSlash: false,
   async rewrites() {
     return {

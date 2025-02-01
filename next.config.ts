@@ -19,6 +19,9 @@ const nextConfig = {
     outputFileTracingRoot: undefined,
   },
   generateEtags: false,
+  basePath: process.env.NODE_ENV === "production" ? "" : "",
+  assetPrefix: process.env.NODE_ENV === "production" ? "" : "",
+  trailingSlash: false,
 };
 
 export default nextConfig;
