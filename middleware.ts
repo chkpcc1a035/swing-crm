@@ -3,7 +3,7 @@
 import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { logToCloud } from "@/utils/logging";
+import { logToCloudServer } from "@/utils/server-logging";
 
 // middleware.ts
 export const config = {
@@ -12,7 +12,7 @@ export const config = {
 
 export async function middleware(req: NextRequest) {
   try {
-    await logToCloud("info", "[Middleware] Processing request", {
+    await logToCloudServer("info", "[Middleware] Processing request", {
       path: req.nextUrl.pathname,
       headers: Object.fromEntries(req.headers),
     });
@@ -24,13 +24,13 @@ export async function middleware(req: NextRequest) {
       data: { session },
     } = await supabase.auth.getSession();
 
-    await logToCloud("info", "[Middleware] Session check", {
+    await logToCloudServer("info", "[Middleware] Session check", {
       hasSession: !!session,
       path: req.nextUrl.pathname,
     });
 
     if (req.headers.get("RSC") === "1") {
-      await logToCloud("info", "[Middleware] RSC request detected", {
+      await logToCloudServer("info", "[Middleware] RSC request detected", {
         path: req.nextUrl.pathname,
       });
       return res;
@@ -39,7 +39,7 @@ export async function middleware(req: NextRequest) {
     const baseUrl = req.nextUrl.origin;
 
     if (!session && req.nextUrl.pathname !== "/login") {
-      await logToCloud("info", "[Middleware] Redirecting to login", {
+      await logToCloudServer("info", "[Middleware] Redirecting to login", {
         from: req.nextUrl.pathname,
         reason: "no_session",
       });
@@ -48,7 +48,7 @@ export async function middleware(req: NextRequest) {
     }
 
     if (session && req.nextUrl.pathname === "/login") {
-      await logToCloud("info", "[Middleware] Redirecting to inventory", {
+      await logToCloudServer("info", "[Middleware] Redirecting to inventory", {
         reason: "already_authenticated",
       });
       const redirectUrl = new URL("/inventory", baseUrl);
@@ -57,7 +57,7 @@ export async function middleware(req: NextRequest) {
 
     return res;
   } catch (error) {
-    await logToCloud("error", "[Middleware] Error", {
+    await logToCloudServer("error", "[Middleware] Error", {
       error: error instanceof Error ? error.message : "Unknown error",
       stack: error instanceof Error ? error.stack : undefined,
     });
