@@ -2,23 +2,9 @@ import { useState } from "react";
 import Image from "next/image";
 import { Inventory } from "@/types";
 
-interface ProductSeries {
-  series_name: string;
-}
-
-// Configure Next.js Image component to allow SVG
-const imageLoader = ({ src }: { src: string }) => {
-  return src.startsWith("/") ? src : "/placeholder.png";
-};
-
 export default function StorageTable({ data }: { data?: Inventory[] }) {
-  const [inventory, setInventory] = useState<Inventory[]>(data || []);
-  const [error, setError] = useState<string | null>(null);
-
-  // Remove or comment out the useEffect since we're using static props
-  // useEffect(() => {
-  //   setInventory(mockInventory);
-  // }, []);
+  const [inventory] = useState<Inventory[]>(data || []);
+  const [error] = useState<string | null>(null);
 
   if (error) {
     return <div className="w-full p-4 text-red-500 text-center">{error}</div>;
@@ -38,11 +24,14 @@ export default function StorageTable({ data }: { data?: Inventory[] }) {
         <thead>
           <tr>
             <th className="p-4">Image</th>
-            <th className="p-4">Product</th>
+            <th className="p-4">Location</th>
             <th className="p-4">SKU</th>
-            <th className="p-4">Quantity</th>
-            <th className="p-4">Price</th>
-            <th className="p-4">Series</th>
+            <th className="p-4">Product Number</th>
+            <th className="p-4">Description</th>
+            <th className="p-4">Stock Qty</th>
+            <th className="p-4">Unit Price</th>
+            <th className="p-4">Wholesale</th>
+            <th className="p-4">Retail</th>
           </tr>
         </thead>
         <tbody>
@@ -50,18 +39,23 @@ export default function StorageTable({ data }: { data?: Inventory[] }) {
             <tr key={item.id} className="border-t">
               <td className="p-4">
                 <Image
-                  src={item.product_info?.image_url || "/placeholder.png"}
-                  alt={item.product_info?.name || ""}
+                  src={
+                    item.product_info?.productImagePath || "/placeholder.png"
+                  }
+                  alt={item.product_info?.productDescription || ""}
                   width={100}
                   height={100}
                   unoptimized
                 />
               </td>
-              <td className="p-4">{item.product_info?.name}</td>
+              <td className="p-4">{item.stock_location}</td>
               <td className="p-4">{item.sku_number}</td>
-              <td className="p-4">{item.quantity}</td>
+              <td className="p-4">{item.product_number}</td>
+              <td className="p-4">{item.product_info?.productDescription}</td>
+              <td className="p-4">{item.stock_qty}</td>
+              <td className="p-4">${item.unit_price?.toFixed(2)}</td>
+              <td className="p-4">${item.wholesale_price?.toFixed(2)}</td>
               <td className="p-4">${item.retail_price?.toFixed(2)}</td>
-              <td className="p-4">{item.product_series?.series_name}</td>
             </tr>
           ))}
         </tbody>

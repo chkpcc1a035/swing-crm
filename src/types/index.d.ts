@@ -21,5 +21,9 @@ export interface Inventory {
   product_series_id: string;
   stock_qty: number;
   series_name: string;
-  product_series?: any; // Add proper type if available
+  product_series?: {
+    id: string;
+    name: string;
+    description?: string;
+  };
 }
