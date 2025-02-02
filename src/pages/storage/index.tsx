@@ -7,6 +7,7 @@ import { createClient } from "@/utils/supabase/static-props";
 import { Inventory } from "@/types";
 import StorageTable from "@/components/StorageTable";
 import { FaPlus } from "react-icons/fa";
+import { useRouter } from "next/navigation";
 // import { useTheme } from "@/components/ThemeProvider";
 
 export async function getStaticProps() {
@@ -75,6 +76,7 @@ export async function getStaticProps() {
 
 export default function StorageManagement({ data }: { data?: Inventory[] }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const router = useRouter();
   // const { darkMode } = useTheme();
 
   useEffect(() => {
@@ -86,11 +88,20 @@ export default function StorageManagement({ data }: { data?: Inventory[] }) {
     console.log("Storage Management Data:", data);
   }, [data]);
 
+  // Handle successful submission
+  const handleSuccess = () => {
+    // Refresh the page to get new data
+    router.refresh();
+    // Or alternatively:
+    // window.location.reload();
+  };
+
   return (
     <AppShell>
       <AddStorageItemModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        onSuccess={handleSuccess}
       />
       <div className="p-4">
         <div className="flex justify-between items-center mb-4">
