@@ -14,7 +14,7 @@ import { HiDocumentText, HiMoon, HiSun } from "react-icons/hi";
 import { IoMdHelpCircle } from "react-icons/io";
 import { Button } from "flowbite-react";
 import { useTheme } from "@/components/ThemeProvider";
-
+import Footer from "./Footer";
 interface AppShellProps {
   children: React.ReactNode;
 }
@@ -40,7 +40,7 @@ export default function AppShell({ children }: AppShellProps) {
 
   return (
     <>
-      <div className="antialiased bg-gray-50 dark:bg-gray-900">
+      <div className="antialiased bg-gray-50 dark:bg-gray-900 min-h-screen flex flex-col">
         <nav className="bg-white border-b border-gray-200 px-4 py-2.5 dark:bg-gray-800 dark:border-gray-700 fixed left-0 right-0 top-0 z-50">
           <div className="flex flex-wrap justify-between items-center">
             <div className="flex justify-start items-center">
@@ -970,7 +970,10 @@ export default function AppShell({ children }: AppShellProps) {
           </div>
         </aside>
 
-        <main className="p-4 md:ml-64 h-auto pt-20">{children}</main>
+        <main className="p-4 md:ml-64 h-auto pt-20 flex-grow">{children}</main>
+        <div className="md:ml-64 relative z-50">
+          <Footer />
+        </div>
       </div>
     </>
   );
