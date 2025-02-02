@@ -1,10 +1,38 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { Inventory } from "@/types";
 
 export default function StorageTable({ data }: { data?: Inventory[] }) {
-  const [inventory] = useState<Inventory[]>(data || []);
-  const [error] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
+  const inventory = useMemo(() => data || [], [data]);
+
+  useEffect(() => {
+    const fetchSignedUrls = async () => {
+      const urls: Record<string, string> = {};
+
+      for (const item of inventory) {
+        if (item.product_info?.productImagePath) {
+          try {
+            const filename = item.product_info.productImagePath
+              .split("/")
+              .pop();
+            const response = await fetch(
+              `/api/getSignedURL?filename=${filename}`
+            );
+            const data = await response.json();
+            urls[item.product_info.productImagePath] = data.url;
+          } catch (err) {
+            console.error("Error fetching signed URL:", err);
+          }
+        }
+      }
+
+      setSignedUrls(urls);
+    };
+
+    fetchSignedUrls();
+  }, [inventory]);
 
   if (error) {
     return <div className="w-full p-4 text-red-500 text-center">{error}</div>;
@@ -40,7 +68,8 @@ export default function StorageTable({ data }: { data?: Inventory[] }) {
               <td className="p-4">
                 <Image
                   src={
-                    item.product_info?.productImagePath || "/placeholder.png"
+                    signedUrls[item.product_info?.productImagePath] ||
+                    "/placeholder.png"
                   }
                   alt={item.product_info?.productDescription || ""}
                   width={100}
