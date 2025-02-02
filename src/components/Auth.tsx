@@ -3,13 +3,14 @@ import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { Button, TextInput } from "flowbite-react";
 import { AuthError } from "@supabase/supabase-js";
 import { HiMoon, HiSun } from "react-icons/hi";
+import { useTheme } from "@/components/ThemeProvider";
 
 export default function Auth() {
   const supabase = useSupabaseClient();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [darkMode, setDarkMode] = useState(false);
+  const { darkMode, toggleDarkMode } = useTheme();
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,7 +69,7 @@ export default function Auth() {
             <Button
               color={darkMode ? "light" : "dark"}
               size="sm"
-              onClick={() => setDarkMode(!darkMode)}
+              onClick={toggleDarkMode}
               className="!p-2"
             >
               {darkMode ? (

@@ -6,6 +6,8 @@ import { initFlowbite } from "flowbite";
 import { createClient } from "@/utils/supabase/static-props";
 import { Inventory } from "@/types";
 import StorageTable from "@/components/StorageTable";
+import { FaPlus } from "react-icons/fa";
+// import { useTheme } from "@/components/ThemeProvider";
 
 export async function getStaticProps() {
   const supabase = createClient();
@@ -73,6 +75,7 @@ export async function getStaticProps() {
 
 export default function StorageManagement({ data }: { data?: Inventory[] }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  // const { darkMode } = useTheme();
 
   useEffect(() => {
     initFlowbite();
@@ -91,8 +94,18 @@ export default function StorageManagement({ data }: { data?: Inventory[] }) {
       />
       <div className="p-4">
         <div className="flex justify-between items-center mb-4">
-          <h1 className="text-2xl font-bold">Storage Management</h1>
-          <Button onClick={() => setIsModalOpen(true)}>Add Storage</Button>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            Storage Management
+          </h1>
+          <Button
+            onClick={() => setIsModalOpen(true)}
+            className="inline-flex items-center justify-center whitespace-nowrap text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+          >
+            <div className="inline-flex items-center justify-center gap-2 relative top-[0.5px]">
+              <FaPlus className="h-4 w-4" />
+              <span>Add Storage</span>
+            </div>
+          </Button>
         </div>
         <StorageTable data={data || []} />
       </div>

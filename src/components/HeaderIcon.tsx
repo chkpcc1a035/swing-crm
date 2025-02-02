@@ -1,6 +1,10 @@
 import Image from "next/image";
+// import { useTheme } from "@/components/ThemeProvider";
+import Link from "next/link";
 
 export default function HeaderIcon() {
+  // const { darkMode } = useTheme();
+
   return (
     <>
       <button
@@ -37,10 +41,7 @@ export default function HeaderIcon() {
         </svg>
         <span className="sr-only">Toggle sidebar</span>
       </button>
-      <a
-        href="https://flowbite.com"
-        className="flex items-center justify-between mr-4"
-      >
+      <Link href="/" className="flex items-center justify-between mr-4">
         <Image
           src="https://flowbite.s3.amazonaws.com/logo.svg"
           className="mr-3 h-8"
@@ -48,10 +49,10 @@ export default function HeaderIcon() {
           width={25}
           height={100}
         />
-        <span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">
+        <span className="self-center text-2xl font-semibold whitespace-nowrap text-gray-900 dark:text-white">
           SwingCMS
         </span>
-      </a>
+      </Link>
     </>
   );
 }
