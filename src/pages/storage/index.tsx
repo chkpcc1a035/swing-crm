@@ -14,14 +14,13 @@ export async function getStaticProps() {
   const supabase = createClient();
 
   try {
-    // Now fetch the actual data
     const { data, error } = await supabase.from("inventory").select(`
         *,
-        product_series (*)
+        product_series:product_series_id (
+          id,
+          series_name
+        )
       `);
-
-    // Add debug logging
-    console.log("Raw Query Result:", { data, error });
 
     if (error) {
       console.error("Error in getStaticProps:", error);
@@ -31,6 +30,7 @@ export async function getStaticProps() {
       };
     }
 
+    // Now fetch the actual data
     if (!data || data.length === 0) {
       console.log("No data found in inventory table");
       return {

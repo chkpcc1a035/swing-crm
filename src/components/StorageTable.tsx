@@ -53,32 +53,44 @@ export default function StorageTable({ data }: { data?: Inventory[] }) {
       <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
         <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
           <tr>
-            <th scope="col" className="p-4">
+            <th scope="col" className="p-4 text-center w-32">
               Image
             </th>
-            <th scope="col" className="p-4">
+            <th scope="col" className="p-4 text-left">
               Location
             </th>
-            <th scope="col" className="p-4">
+            <th scope="col" className="p-4 text-left">
               SKU
             </th>
-            <th scope="col" className="p-4">
+            <th scope="col" className="p-4 text-left">
               Product Number
             </th>
-            <th scope="col" className="p-4">
+            <th scope="col" className="p-4 text-left">
               Description
             </th>
-            <th scope="col" className="p-4">
+            <th scope="col" className="p-4 text-left">
+              Qty
+            </th>
+            <th scope="col" className="p-4 text-right">
               Stock Qty
             </th>
-            <th scope="col" className="p-4">
+            <th scope="col" className="p-4 text-right">
               Unit Price
             </th>
-            <th scope="col" className="p-4">
+            <th scope="col" className="p-4 text-right">
               Wholesale
             </th>
-            <th scope="col" className="p-4">
+            <th scope="col" className="p-4 text-right">
               Retail
+            </th>
+            <th scope="col" className="p-4 text-right">
+              Delivery Fee
+            </th>
+            <th scope="col" className="p-4 text-right">
+              Cost Price
+            </th>
+            <th scope="col" className="p-4 text-left">
+              Category
             </th>
           </tr>
         </thead>
@@ -88,42 +100,60 @@ export default function StorageTable({ data }: { data?: Inventory[] }) {
               key={item.id}
               className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
             >
-              <td className="p-4">
-                <Image
-                  src={
-                    signedUrls[item.product_info?.productImagePath] ||
-                    "/placeholder.png"
-                  }
-                  alt={item.product_info?.productDescription || ""}
-                  width={100}
-                  height={100}
-                  className="rounded-lg"
-                  unoptimized
-                />
-              </td>
-              <td className="p-4 text-gray-900 dark:text-white whitespace-nowrap">
-                {item.stock_location}
-              </td>
-              <td className="p-4 text-gray-900 dark:text-white whitespace-nowrap">
-                {item.sku_number}
-              </td>
-              <td className="p-4 text-gray-900 dark:text-white whitespace-nowrap">
-                {item.product_number}
+              <td className="p-4 text-center">
+                <div className="flex justify-center">
+                  <Image
+                    src={
+                      signedUrls[item.product_info?.productImagePath] ||
+                      "/placeholder.png"
+                    }
+                    alt={item.product_info?.productDescription || ""}
+                    width={100}
+                    height={100}
+                    className="rounded-lg object-contain"
+                    unoptimized
+                  />
+                </div>
               </td>
               <td className="p-4 text-gray-900 dark:text-white">
-                {item.product_info?.productDescription}
+                {item.stock_location}
               </td>
-              <td className="p-4 text-gray-900 dark:text-white whitespace-nowrap">
+              <td className="p-4 text-gray-900 dark:text-white">
+                {item.sku_number}
+              </td>
+              <td className="p-4 text-gray-900 dark:text-white">
+                {item.product_number}
+              </td>
+              <td className="p-4 text-gray-900 dark:text-white max-w-md">
+                <div className="line-clamp-2">
+                  {item.product_info?.productDescription}
+                </div>
+              </td>
+
+              <td className="p-4 text-gray-900 dark:text-white text-right">
+                {item.quantity}
+              </td>
+              <td className="p-4 text-gray-900 dark:text-white text-right">
                 {item.stock_qty}
               </td>
-              <td className="p-4 text-gray-900 dark:text-white whitespace-nowrap">
+
+              <td className="p-4 text-gray-900 dark:text-white text-right">
                 ${item.unit_price?.toFixed(2)}
               </td>
-              <td className="p-4 text-gray-900 dark:text-white whitespace-nowrap">
+              <td className="p-4 text-gray-900 dark:text-white text-right">
                 ${item.wholesale_price?.toFixed(2)}
               </td>
-              <td className="p-4 text-gray-900 dark:text-white whitespace-nowrap">
+              <td className="p-4 text-gray-900 dark:text-white text-right">
                 ${item.retail_price?.toFixed(2)}
+              </td>
+              <td className="p-4 text-gray-900 dark:text-white text-right">
+                ${item.delivery_fee?.toFixed(2)}
+              </td>
+              <td className="p-4 text-gray-900 dark:text-white text-right">
+                ${item.cost_price?.toFixed(2)}
+              </td>
+              <td className="p-4 text-gray-900 dark:text-white text-left">
+                {item.product_series?.series_name || "-"}
               </td>
             </tr>
           ))}
