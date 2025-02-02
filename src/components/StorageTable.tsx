@@ -3,7 +3,7 @@ import Image from "next/image";
 import { Inventory } from "@/types";
 
 export default function StorageTable({ data }: { data?: Inventory[] }) {
-  const [error, setError] = useState<string | null>(null);
+  const [error] = useState<string | null>(null);
   const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
   const inventory = useMemo(() => data || [], [data]);
 
