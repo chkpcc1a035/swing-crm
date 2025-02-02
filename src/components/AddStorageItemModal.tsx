@@ -11,7 +11,7 @@ import {
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { createClient } from "@/utils/supabase/component";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 import { HiCheck, HiX } from "react-icons/hi";
 import { FaTimes } from "react-icons/fa";
 
@@ -26,7 +26,7 @@ export default function AddStorageItemModal({
   onClose,
   onSuccess,
 }: AddStorageItemModalProps) {
-  const router = useRouter();
+  //   const router = useRouter();
   const supabase = createClient();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>("");
@@ -76,7 +76,9 @@ export default function AddStorageItemModal({
       } = await supabase.auth.getSession();
       if (!session) {
         showToast("Please sign in to add inventory items", "error");
-        router.push("/login");
+        localStorage.setItem("lastPath", "/storage");
+        window.location.href = "/";
+        return;
       }
     };
 
@@ -114,13 +116,13 @@ export default function AddStorageItemModal({
   // Update handleSubmit function
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     const {
       data: { session },
     } = await supabase.auth.getSession();
     if (!session) {
-      showToast("Please sign in to add inventory items", "error");
-      router.push("/login");
+      showToast("Session expired. Please sign in again", "error");
+      localStorage.setItem("lastPath", "/storage");
+      window.location.href = "/";
       return;
     }
 
@@ -184,9 +186,9 @@ export default function AddStorageItemModal({
       if (onSuccess) {
         onSuccess();
       }
-
       onClose();
-      router.push("/storage");
+      localStorage.setItem("lastPath", "/storage");
+      window.location.href = "/storage";
     } catch (error) {
       console.error("Error adding storage item:", error);
       showToast("Failed to add storage item", "error");

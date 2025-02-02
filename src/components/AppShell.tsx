@@ -15,6 +15,8 @@ import { IoMdHelpCircle } from "react-icons/io";
 import { Button } from "flowbite-react";
 import { useTheme } from "@/components/ThemeProvider";
 import Footer from "./Footer";
+import { supabase } from "@/utils/supabase";
+
 interface AppShellProps {
   children: React.ReactNode;
 }
@@ -25,6 +27,15 @@ export default function AppShell({ children }: AppShellProps) {
   const { darkMode, toggleDarkMode } = useTheme();
 
   useEffect(() => {
+    const checkAuth = async () => {
+      const session = await supabase.auth.getSession();
+      if (!session) {
+        localStorage.setItem("lastPath", window.location.pathname);
+        router.push("/");
+      }
+    };
+
+    checkAuth();
     initFlowbite();
   }, []);
 

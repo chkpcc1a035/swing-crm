@@ -1,16 +1,32 @@
 import { useState } from "react";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
-import { Button, TextInput } from "flowbite-react";
+import { Button, TextInput, Toast } from "flowbite-react";
 import { AuthError } from "@supabase/supabase-js";
-import { HiMoon, HiSun } from "react-icons/hi";
+import { HiMoon, HiSun, HiX } from "react-icons/hi";
 import { useTheme } from "@/components/ThemeProvider";
+import { useRouter } from "next/router";
 
 export default function Auth() {
+  const router = useRouter();
   const supabase = useSupabaseClient();
-  const [loading, setLoading] = useState(false);
+  const { darkMode, toggleDarkMode } = useTheme();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { darkMode, toggleDarkMode } = useTheme();
+  const [loading, setLoading] = useState(false);
+  const [toast, setToast] = useState<{
+    show: boolean;
+    message: string;
+    type: "success" | "error";
+  }>({
+    show: false,
+    message: "",
+    type: "success",
+  });
+
+  const showToast = (message: string, type: "success" | "error") => {
+    setToast({ show: true, message, type });
+    setTimeout(() => setToast((prev) => ({ ...prev, show: false })), 3000);
+  };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,18 +51,24 @@ export default function Auth() {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     try {
-      setLoading(true);
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       if (error) throw error;
-    } catch (error: unknown) {
-      if (error instanceof AuthError) {
-        alert(error.message);
+      const lastPath = localStorage.getItem("lastPath");
+      if (lastPath && lastPath !== "/") {
+        router.push(lastPath);
       } else {
-        alert("An unexpected error occurred");
+        router.push("/dashboard");
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        showToast(error.message, "error");
+      } else {
+        showToast("Error logging in!", "error");
       }
     } finally {
       setLoading(false);
@@ -155,6 +177,15 @@ export default function Auth() {
           </form>
         </div>
       </div>
+
+      {toast.show && (
+        <div className="fixed bottom-4 right-4 z-[60]">
+          <Toast>
+            <HiX className="h-5 w-5 text-red-600" />
+            <div className="pl-4 text-sm font-normal">{toast.message}</div>
+          </Toast>
+        </div>
+      )}
     </div>
   );
 }

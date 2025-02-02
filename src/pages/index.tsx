@@ -10,11 +10,15 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (session) {
-      router.push("/dashboard");
-    } else {
+    const checkSession = async () => {
+      if (session) {
+        const lastPath = localStorage.getItem("lastPath") || "/dashboard";
+        await router.push(lastPath);
+      }
       setIsLoading(false);
-    }
+    };
+
+    checkSession();
   }, [session, router]);
 
   if (isLoading) {
