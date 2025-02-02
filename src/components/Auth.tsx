@@ -4,10 +4,8 @@ import { Button, TextInput, Toast } from "flowbite-react";
 import { AuthError } from "@supabase/supabase-js";
 import { HiMoon, HiSun, HiX } from "react-icons/hi";
 import { useTheme } from "@/components/ThemeProvider";
-import { useRouter } from "next/router";
 
 export default function Auth() {
-  const router = useRouter();
   const supabase = useSupabaseClient();
   const { darkMode, toggleDarkMode } = useTheme();
   const [email, setEmail] = useState("");
@@ -59,11 +57,8 @@ export default function Auth() {
       });
       if (error) throw error;
       const lastPath = localStorage.getItem("lastPath");
-      if (lastPath && lastPath !== "/") {
-        router.push(lastPath);
-      } else {
-        router.push("/dashboard");
-      }
+      window.location.href =
+        lastPath && lastPath !== "/" ? lastPath : "/dashboard";
     } catch (error) {
       if (error instanceof Error) {
         showToast(error.message, "error");
