@@ -45,7 +45,7 @@ export default function HeaderIcon() {
           src="https://flowbite.s3.amazonaws.com/logo.svg"
           className="mr-3 h-8"
           alt="Flowbite Logo"
-          width={100}
+          width={25}
           height={100}
         />
         <span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">

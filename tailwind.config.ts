@@ -1,5 +1,5 @@
 import type { Config } from "tailwindcss";
-
+import flowbite from "flowbite-react/tailwind";
 export default {
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
@@ -14,5 +14,6 @@ export default {
       },
     },
   },
-  plugins: [],
+  darkMode: "class",
+  plugins: [flowbite],
 } satisfies Config;

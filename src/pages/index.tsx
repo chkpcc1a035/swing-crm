@@ -1,20 +1,23 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useSession } from "@supabase/auth-helpers-react";
 import { useRouter } from "next/router";
 import Auth from "@/components/Auth";
-import LoadingSpinner from "./components/LoadingSpinner";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 export default function Home() {
   const session = useSession();
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (session) {
       router.push("/dashboard");
+    } else {
+      setIsLoading(false);
     }
   }, [session, router]);
 
-  if (session) {
+  if (isLoading) {
     return <LoadingSpinner />;
   }
 
