@@ -2,7 +2,21 @@ import { Inventory } from "@/types";
 import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import { useTheme } from "@/components/ThemeProvider";
-import { FiX, FiEdit } from "react-icons/fi";
+import {
+  FiX,
+  FiEdit,
+  FiPackage,
+  FiHash,
+  FiMapPin,
+  FiTag,
+  FiBox,
+  FiDatabase,
+  FiDollarSign,
+  FiTruck,
+  FiShoppingCart,
+  FiCreditCard,
+  FiImage,
+} from "react-icons/fi";
 
 interface ViewStorageDetailModalProps {
   isOpen: boolean;
@@ -85,18 +99,19 @@ export default function ViewStorageDetailModal({
       <div
         ref={modalRef}
         className={`max-w-2xl w-full m-4 rounded-lg shadow-lg border
-        ${
-          darkMode
-            ? "bg-gray-800 border-gray-700 text-gray-200"
-            : "bg-white border-gray-200 text-gray-800"
-        }`}
+          ${
+            darkMode
+              ? "bg-gray-800 border-gray-700 text-gray-200"
+              : "bg-white border-gray-200 text-gray-800"
+          }`}
       >
         <div className="p-6">
           <div className="flex justify-between items-center mb-4">
             <h2
-              className={`text-xl font-bold
+              className={`text-xl font-bold flex items-center gap-2
               ${darkMode ? "text-gray-100" : "text-gray-900"}`}
             >
+              <FiPackage className="w-5 h-5" />
               Item Details
             </h2>
             <button
@@ -119,48 +134,66 @@ export default function ViewStorageDetailModal({
                   darkMode ? "bg-gray-700" : "bg-gray-50"
                 }`}
               >
-                <p className="font-semibold">SKU Number</p>
-                <p>{item.sku_number}</p>
+                <p className="font-semibold flex items-center gap-2 mb-1">
+                  <FiHash className="w-4 h-4" />
+                  SKU Number
+                </p>
+                <p>{item?.sku_number}</p>
               </div>
               <div
                 className={`p-3 rounded-lg ${
                   darkMode ? "bg-gray-700" : "bg-gray-50"
                 }`}
               >
-                <p className="font-semibold">Product Number</p>
-                <p>{item.product_number}</p>
+                <p className="font-semibold flex items-center gap-2 mb-1">
+                  <FiTag className="w-4 h-4" />
+                  Product Number
+                </p>
+                <p>{item?.product_number}</p>
               </div>
               <div
                 className={`p-3 rounded-lg ${
                   darkMode ? "bg-gray-700" : "bg-gray-50"
                 }`}
               >
-                <p className="font-semibold">Location</p>
-                <p>{item.stock_location}</p>
+                <p className="font-semibold flex items-center gap-2 mb-1">
+                  <FiMapPin className="w-4 h-4" />
+                  Location
+                </p>
+                <p>{item?.stock_location}</p>
               </div>
               <div
                 className={`p-3 rounded-lg ${
                   darkMode ? "bg-gray-700" : "bg-gray-50"
                 }`}
               >
-                <p className="font-semibold">Category</p>
-                <p>{item.product_series?.series_name || "-"}</p>
+                <p className="font-semibold flex items-center gap-2 mb-1">
+                  <FiBox className="w-4 h-4" />
+                  Category
+                </p>
+                <p>{item?.product_series?.series_name || "-"}</p>
               </div>
               <div
                 className={`p-3 rounded-lg ${
                   darkMode ? "bg-gray-700" : "bg-gray-50"
                 }`}
               >
-                <p className="font-semibold">Quantity</p>
-                <p>{item.quantity}</p>
+                <p className="font-semibold flex items-center gap-2 mb-1">
+                  <FiDatabase className="w-4 h-4" />
+                  Quantity
+                </p>
+                <p>{item?.quantity}</p>
               </div>
               <div
                 className={`p-3 rounded-lg ${
                   darkMode ? "bg-gray-700" : "bg-gray-50"
                 }`}
               >
-                <p className="font-semibold">Stock Quantity</p>
-                <p>{item.stock_qty}</p>
+                <p className="font-semibold flex items-center gap-2 mb-1">
+                  <FiBox className="w-4 h-4" />
+                  Stock Quantity
+                </p>
+                <p>{item?.stock_qty}</p>
               </div>
             </div>
 
@@ -169,8 +202,11 @@ export default function ViewStorageDetailModal({
                 darkMode ? "bg-gray-700" : "bg-gray-50"
               }`}
             >
-              <p className="font-semibold">Description</p>
-              <p>{item.product_info?.productDescription}</p>
+              <p className="font-semibold flex items-center gap-2 mb-1">
+                <FiTag className="w-4 h-4" />
+                Description
+              </p>
+              <p>{item?.product_info?.productDescription}</p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -179,7 +215,10 @@ export default function ViewStorageDetailModal({
                   darkMode ? "bg-gray-700" : "bg-gray-50"
                 }`}
               >
-                <p className="font-semibold mb-2">Pricing Information</p>
+                <p className="font-semibold flex items-center gap-2 mb-3">
+                  <FiDollarSign className="w-4 h-4" />
+                  Pricing Information
+                </p>
                 <div className="relative overflow-x-auto">
                   <table
                     className={`w-full text-sm text-left 
@@ -204,76 +243,79 @@ export default function ViewStorageDetailModal({
                     </thead>
                     <tbody>
                       <tr
-                        className={`border-b
-                        ${
-                          darkMode
-                            ? "border-gray-600 hover:bg-gray-600"
-                            : "border-gray-200 hover:bg-gray-100"
+                        className={`border-b ${
+                          darkMode ? "border-gray-600" : "border-gray-200"
                         }`}
                       >
-                        <th scope="row" className="px-4 py-2 font-medium">
+                        <th
+                          scope="row"
+                          className="px-4 py-2 font-medium flex items-center gap-2"
+                        >
+                          <FiTag className="w-3 h-3" />
                           Unit Price
                         </th>
                         <td className="px-4 py-2 text-right">
-                          ${item.unit_price?.toFixed(2)}
+                          ${item?.unit_price?.toFixed(2)}
                         </td>
                       </tr>
                       <tr
-                        className={`border-b
-                        ${
-                          darkMode
-                            ? "border-gray-600 hover:bg-gray-600"
-                            : "border-gray-200 hover:bg-gray-100"
+                        className={`border-b ${
+                          darkMode ? "border-gray-600" : "border-gray-200"
                         }`}
                       >
-                        <th scope="row" className="px-4 py-2 font-medium">
+                        <th
+                          scope="row"
+                          className="px-4 py-2 font-medium flex items-center gap-2"
+                        >
+                          <FiShoppingCart className="w-3 h-3" />
                           Wholesale
                         </th>
                         <td className="px-4 py-2 text-right">
-                          ${item.wholesale_price?.toFixed(2)}
+                          ${item?.wholesale_price?.toFixed(2)}
                         </td>
                       </tr>
                       <tr
-                        className={`border-b
-                        ${
-                          darkMode
-                            ? "border-gray-600 hover:bg-gray-600"
-                            : "border-gray-200 hover:bg-gray-100"
+                        className={`border-b ${
+                          darkMode ? "border-gray-600" : "border-gray-200"
                         }`}
                       >
-                        <th scope="row" className="px-4 py-2 font-medium">
+                        <th
+                          scope="row"
+                          className="px-4 py-2 font-medium flex items-center gap-2"
+                        >
+                          <FiCreditCard className="w-3 h-3" />
                           Retail
                         </th>
                         <td className="px-4 py-2 text-right">
-                          ${item.retail_price?.toFixed(2)}
+                          ${item?.retail_price?.toFixed(2)}
                         </td>
                       </tr>
                       <tr
-                        className={`border-b
-                        ${
-                          darkMode
-                            ? "border-gray-600 hover:bg-gray-600"
-                            : "border-gray-200 hover:bg-gray-100"
+                        className={`border-b ${
+                          darkMode ? "border-gray-600" : "border-gray-200"
                         }`}
                       >
-                        <th scope="row" className="px-4 py-2 font-medium">
+                        <th
+                          scope="row"
+                          className="px-4 py-2 font-medium flex items-center gap-2"
+                        >
+                          <FiDollarSign className="w-3 h-3" />
                           Cost Price
                         </th>
                         <td className="px-4 py-2 text-right">
-                          ${item.cost_price?.toFixed(2)}
+                          ${item?.cost_price?.toFixed(2)}
                         </td>
                       </tr>
-                      <tr
-                        className={`
-                        ${
-                          darkMode ? "hover:bg-gray-600" : "hover:bg-gray-100"
-                        }`}
-                      >
-                        <th scope="row" className="px-4 py-2 font-medium">
+                      <tr>
+                        <th
+                          scope="row"
+                          className="px-4 py-2 font-medium flex items-center gap-2"
+                        >
+                          <FiTruck className="w-3 h-3" />
                           Delivery Fee
                         </th>
                         <td className="px-4 py-2 text-right">
-                          ${item.delivery_fee?.toFixed(2)}
+                          ${item?.delivery_fee?.toFixed(2)}
                         </td>
                       </tr>
                     </tbody>
@@ -284,14 +326,22 @@ export default function ViewStorageDetailModal({
                 className={`flex justify-center items-start p-3 rounded-lg 
                 ${darkMode ? "bg-gray-700" : "bg-gray-50"}`}
               >
-                <Image
-                  src={signedUrl || "/placeholder.png"}
-                  alt={item.product_info?.productDescription || "Product image"}
-                  width={160}
-                  height={160}
-                  className="w-40 h-40 object-contain rounded-lg"
-                  unoptimized
-                />
+                <div className="space-y-2">
+                  <p className="font-semibold flex items-center gap-2 mb-1">
+                    <FiImage className="w-4 h-4" />
+                    Product Image
+                  </p>
+                  <Image
+                    src={signedUrl || "/placeholder.png"}
+                    alt={
+                      item?.product_info?.productDescription || "Product image"
+                    }
+                    width={160}
+                    height={160}
+                    className="w-40 h-40 object-contain rounded-lg"
+                    unoptimized
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -309,7 +359,6 @@ export default function ViewStorageDetailModal({
               <FiEdit className="w-4 h-4" />
               Edit
             </button>
-
             <button
               onClick={onClose}
               className={`px-4 py-2 rounded-lg transition-colors flex items-center gap-2

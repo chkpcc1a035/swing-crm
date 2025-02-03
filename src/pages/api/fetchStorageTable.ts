@@ -12,7 +12,7 @@ export default async function handler(
   res: NextApiResponse
 ) {
   // Log request method for debugging
-  console.log("Request method:", req.method);
+  // console.log("Request method:", req.method);
 
   if (req.method !== "GET") {
     return res
@@ -21,29 +21,34 @@ export default async function handler(
   }
 
   try {
-    // Log that we're starting the query
-    console.log("Starting Supabase query");
+    // First, let's check if the product_series table has data
+    const { data: seriesData, error: seriesError } = await supabase
+      .from("product_series")
+      .select("*");
 
+    // Log product_series table data
+    console.log("Product Series Table Data:", seriesData);
+
+    // Then perform our main query
     const { data, error } = await supabase.from("inventory").select(`
         *,
         product_series (
-          *
+          series_name
         )
       `);
 
-    // Log the response for debugging
-    console.log("Supabase response:", { data, error });
+    // Log the full response for debugging
+    // console.log("Full Supabase Response:", { data, error });
 
-    if (error) {
-      console.error("Supabase error:", error);
+    if (error || seriesError) {
+      console.error("Supabase error:", error || seriesError);
       return res.status(500).json({
         success: false,
-        message: error.message,
-        details: error,
+        message: (error || seriesError)?.message,
+        details: error || seriesError,
       });
     }
 
-    // Always return a success response with data (empty array if no data)
     return res.status(200).json({
       success: true,
       data: data || [],

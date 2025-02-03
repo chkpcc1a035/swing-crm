@@ -4,6 +4,8 @@ import { Inventory } from "@/types";
 import ViewStorageDetailModal from "./ViewStorageDetailModal";
 import { useTheme } from "@/components/ThemeProvider";
 import EditStorageModal from "./EditStorageModal";
+import DeleteConfirmationModal from "./DeleteConfirmationModal";
+import { useSession } from "@supabase/auth-helpers-react";
 
 export default function StorageTable({ data }: { data?: Inventory[] }) {
   const [error] = useState<string | null>(null);
@@ -18,6 +20,10 @@ export default function StorageTable({ data }: { data?: Inventory[] }) {
   const [showEditModal, setShowEditModal] = useState(false);
   const inventory = useMemo(() => data || [], [data]);
   const { darkMode } = useTheme();
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const session = useSession();
 
   useEffect(() => {
     const fetchSignedUrls = async () => {
@@ -89,10 +95,98 @@ export default function StorageTable({ data }: { data?: Inventory[] }) {
     }
   };
 
-  const handleDelete = () => {
-    // Add your delete logic here
-    console.log("Delete item:", selectedItem);
+  const handleDelete = async () => {
+    if (!selectedItem) return;
+
+    try {
+      setIsDeleting(true);
+      const response = await fetch("/api/deleteStorage", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify({ ids: [selectedItem.id] }),
+      });
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.message);
+      }
+
+      // Refresh the page or update the local state
+      window.location.reload();
+    } catch (error) {
+      console.error("Error deleting item:", error);
+      alert("Failed to delete item. Please try again.");
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteModal(false);
+      setContextMenu({ ...contextMenu, show: false });
+    }
+  };
+
+  const handleDeleteClick = () => {
     setContextMenu({ ...contextMenu, show: false });
+    setShowDeleteModal(true);
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedItems.size === 0) return;
+
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete ${selectedItems.size} items?`
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+      setIsDeleting(true);
+      const response = await fetch("/api/deleteStorage", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify({ ids: Array.from(selectedItems) }),
+      });
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.message);
+      }
+
+      // Refresh the page or update the local state
+      window.location.reload();
+    } catch (error) {
+      console.error("Error deleting items:", error);
+      alert("Failed to delete items. Please try again.");
+    } finally {
+      setIsDeleting(false);
+      setSelectedItems(new Set());
+    }
+  };
+
+  // Add handler for selecting all items
+  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      setSelectedItems(new Set(inventory.map((item) => item.id)));
+    } else {
+      setSelectedItems(new Set());
+    }
+  };
+
+  // Add handler for selecting individual items
+  const handleSelectItem = (itemId: string) => {
+    const newSelected = new Set(selectedItems);
+    if (newSelected.has(itemId)) {
+      newSelected.delete(itemId);
+    } else {
+      newSelected.add(itemId);
+    }
+    setSelectedItems(newSelected);
   };
 
   if (error) {
@@ -113,6 +207,16 @@ export default function StorageTable({ data }: { data?: Inventory[] }) {
         <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
           <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
             <tr>
+              <th scope="col" className="p-4">
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                    checked={selectedItems.size === inventory.length}
+                    onChange={handleSelectAll}
+                  />
+                </div>
+              </th>
               <th scope="col" className="p-4 text-center w-32">
                 Image
               </th>
@@ -158,10 +262,25 @@ export default function StorageTable({ data }: { data?: Inventory[] }) {
             {inventory.map((item) => (
               <tr
                 key={item.id}
-                className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+                className={`bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 ${
+                  selectedItems.has(item.id)
+                    ? "bg-gray-50 dark:bg-gray-700"
+                    : ""
+                }`}
                 onContextMenu={(e) => handleContextMenu(e, item)}
                 style={{ cursor: "context-menu" }}
               >
+                <td className="w-4 p-4">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                      checked={selectedItems.has(item.id)}
+                      onChange={() => handleSelectItem(item.id)}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </div>
+                </td>
                 <td className="p-4 text-center">
                   <div className="flex justify-center">
                     <Image
@@ -293,7 +412,7 @@ export default function StorageTable({ data }: { data?: Inventory[] }) {
             Edit Item
           </button>
           <button
-            onClick={handleDelete}
+            onClick={handleDeleteClick}
             className={`w-full px-4 py-2 text-left flex items-center gap-2 text-red-500
               ${darkMode ? "hover:bg-gray-700" : "hover:bg-gray-100"}`}
           >
@@ -327,6 +446,42 @@ export default function StorageTable({ data }: { data?: Inventory[] }) {
         onClose={() => setShowEditModal(false)}
         item={selectedItem}
         onSave={handleSave}
+      />
+
+      {selectedItems.size > 0 && (
+        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 flex items-center gap-4 px-6 py-3 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
+          <span className="text-sm text-gray-600 dark:text-gray-300">
+            {selectedItems.size} items selected
+          </span>
+          <button
+            className={`px-4 py-2 text-sm text-white bg-red-500 rounded hover:bg-red-600
+              ${isDeleting ? "opacity-50 cursor-not-allowed" : ""}`}
+            onClick={handleBulkDelete}
+            disabled={isDeleting}
+          >
+            {isDeleting ? "Deleting..." : "Delete Selected"}
+          </button>
+          <button
+            className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
+            onClick={() => setSelectedItems(new Set())}
+            disabled={isDeleting}
+          >
+            Clear Selection
+          </button>
+        </div>
+      )}
+
+      <DeleteConfirmationModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleDelete}
+        item={selectedItem}
+        isDeleting={isDeleting}
+        imageUrl={
+          selectedItem
+            ? signedUrls[selectedItem.product_info?.productImagePath]
+            : undefined
+        }
       />
     </>
   );

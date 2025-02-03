@@ -8,6 +8,15 @@ import {
   FiPackage,
   FiInfo,
   FiMapPin,
+  FiHash,
+  FiTag,
+  FiBox,
+  FiDatabase,
+  FiShoppingCart,
+  FiCreditCard,
+  FiTruck,
+  FiEdit,
+  FiGrid,
 } from "react-icons/fi";
 
 interface EditStorageModalProps {
@@ -101,9 +110,10 @@ export default function EditStorageModal({
         <form onSubmit={handleSubmit} className="p-6">
           <div className="flex justify-between items-center mb-6">
             <h2
-              className={`text-2xl font-bold
-              ${darkMode ? "text-gray-100" : "text-gray-900"}`}
+              className={`text-2xl font-bold flex items-center gap-2
+                ${darkMode ? "text-gray-100" : "text-gray-900"}`}
             >
+              <FiEdit className="w-6 h-6" />
               Edit Inventory Item
             </h2>
             <button
@@ -136,7 +146,7 @@ export default function EditStorageModal({
                 }`}
             >
               <div className="flex items-center gap-2">
-                <FiInfo />
+                <FiPackage className="w-4 h-4" />
                 Basic Information
               </div>
               {activeTab === "basic" && (
@@ -161,7 +171,7 @@ export default function EditStorageModal({
                 }`}
             >
               <div className="flex items-center gap-2">
-                <FiDollarSign />
+                <FiDollarSign className="w-4 h-4" />
                 Pricing Details
               </div>
               {activeTab === "pricing" && (
@@ -179,7 +189,7 @@ export default function EditStorageModal({
                 <div>
                   <label className={labelClassName}>
                     <div className="flex items-center gap-2">
-                      <FiPackage className="w-4 h-4" />
+                      <FiHash className="w-4 h-4" />
                       SKU Number
                     </div>
                   </label>
@@ -192,7 +202,12 @@ export default function EditStorageModal({
                   />
                 </div>
                 <div>
-                  <label className={labelClassName}>Product Number</label>
+                  <label className={labelClassName}>
+                    <div className="flex items-center gap-2">
+                      <FiTag className="w-4 h-4" />
+                      Product Number
+                    </div>
+                  </label>
                   <input
                     type="text"
                     name="product_number"
@@ -204,7 +219,12 @@ export default function EditStorageModal({
               </div>
 
               <div>
-                <label className={labelClassName}>Description</label>
+                <label className={labelClassName}>
+                  <div className="flex items-center gap-2">
+                    <FiInfo className="w-4 h-4" />
+                    Description
+                  </div>
+                </label>
                 <input
                   type="text"
                   name="product_info.productDescription"
@@ -231,7 +251,12 @@ export default function EditStorageModal({
                   />
                 </div>
                 <div>
-                  <label className={labelClassName}>Category</label>
+                  <label className={labelClassName}>
+                    <div className="flex items-center gap-2">
+                      <FiGrid className="w-4 h-4" />
+                      Category
+                    </div>
+                  </label>
                   <input
                     type="text"
                     name="product_series.series_name"
@@ -244,7 +269,12 @@ export default function EditStorageModal({
 
               <div className="grid grid-cols-2 gap-6">
                 <div>
-                  <label className={labelClassName}>Quantity</label>
+                  <label className={labelClassName}>
+                    <div className="flex items-center gap-2">
+                      <FiDatabase className="w-4 h-4" />
+                      Quantity
+                    </div>
+                  </label>
                   <input
                     type="number"
                     name="quantity"
@@ -254,7 +284,12 @@ export default function EditStorageModal({
                   />
                 </div>
                 <div>
-                  <label className={labelClassName}>Stock Quantity</label>
+                  <label className={labelClassName}>
+                    <div className="flex items-center gap-2">
+                      <FiBox className="w-4 h-4" />
+                      Stock Quantity
+                    </div>
+                  </label>
                   <input
                     type="number"
                     name="stock_qty"
@@ -273,7 +308,7 @@ export default function EditStorageModal({
                 <div>
                   <label className={labelClassName}>
                     <div className="flex items-center gap-2">
-                      <FiDollarSign className="w-4 h-4" />
+                      <FiTag className="w-4 h-4" />
                       Unit Price
                     </div>
                   </label>
@@ -287,7 +322,12 @@ export default function EditStorageModal({
                   />
                 </div>
                 <div>
-                  <label className={labelClassName}>Wholesale Price</label>
+                  <label className={labelClassName}>
+                    <div className="flex items-center gap-2">
+                      <FiShoppingCart className="w-4 h-4" />
+                      Wholesale Price
+                    </div>
+                  </label>
                   <input
                     type="number"
                     step="0.01"
@@ -301,7 +341,12 @@ export default function EditStorageModal({
 
               <div className="grid grid-cols-2 gap-6">
                 <div>
-                  <label className={labelClassName}>Retail Price</label>
+                  <label className={labelClassName}>
+                    <div className="flex items-center gap-2">
+                      <FiCreditCard className="w-4 h-4" />
+                      Retail Price
+                    </div>
+                  </label>
                   <input
                     type="number"
                     step="0.01"
@@ -312,7 +357,12 @@ export default function EditStorageModal({
                   />
                 </div>
                 <div>
-                  <label className={labelClassName}>Cost Price</label>
+                  <label className={labelClassName}>
+                    <div className="flex items-center gap-2">
+                      <FiDollarSign className="w-4 h-4" />
+                      Cost Price
+                    </div>
+                  </label>
                   <input
                     type="number"
                     step="0.01"
@@ -325,7 +375,12 @@ export default function EditStorageModal({
               </div>
 
               <div>
-                <label className={labelClassName}>Delivery Fee</label>
+                <label className={labelClassName}>
+                  <div className="flex items-center gap-2">
+                    <FiTruck className="w-4 h-4" />
+                    Delivery Fee
+                  </div>
+                </label>
                 <input
                   type="number"
                   step="0.01"

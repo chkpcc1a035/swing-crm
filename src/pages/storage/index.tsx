@@ -36,9 +36,14 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       };
     }
 
-    const { data: inventoryData } = await supabase
-      .from("inventory")
-      .select("*");
+    const { data: inventoryData } = await supabase.from("inventory").select(`
+        *,
+        product_series (
+          series_name
+        )
+      `);
+
+    // console.log("Inventory Data from getServerSideProps:", inventoryData);
 
     return {
       props: {

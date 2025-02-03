@@ -34,3 +34,11 @@ export interface ViewStorageDetailModalProps {
   onClose: () => void;
   item: Inventory | null;
 }
+
+export interface DeleteConfirmationModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  item: Inventory | null;
+  isDeleting: boolean;
+}
