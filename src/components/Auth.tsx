@@ -4,6 +4,7 @@ import { Button, TextInput, Toast } from "flowbite-react";
 import { AuthError } from "@supabase/supabase-js";
 import { HiMoon, HiSun, HiX } from "react-icons/hi";
 import { useTheme } from "@/components/ThemeProvider";
+// import { useRouter } from "next/navigation";
 
 export default function Auth() {
   const supabase = useSupabaseClient();
@@ -11,6 +12,7 @@ export default function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  // const router = useRouter();
   const [toast, setToast] = useState<{
     show: boolean;
     message: string;
@@ -51,14 +53,28 @@ export default function Auth() {
     e.preventDefault();
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
+
       if (error) throw error;
-      const lastPath = localStorage.getItem("lastPath");
-      window.location.href =
-        lastPath && lastPath !== "/" ? lastPath : "/dashboard";
+
+      if (data.user) {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        if (session) {
+          const lastPath = localStorage.getItem("lastPath") || "/dashboard";
+
+          console.log("Session:", session);
+          console.log(`Login successful, redirecting to ${lastPath}`);
+          window.location.href = lastPath;
+        } else {
+          throw new Error("Failed to establish session");
+        }
+      }
     } catch (error) {
       if (error instanceof Error) {
         showToast(error.message, "error");

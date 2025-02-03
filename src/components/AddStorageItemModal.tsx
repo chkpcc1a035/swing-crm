@@ -83,7 +83,7 @@ export default function AddStorageItemModal({
     };
 
     checkAuth();
-  }, []);
+  }, [supabase.auth]);
 
   // Fetch product series on modal open
   useEffect(() => {
@@ -100,7 +100,7 @@ export default function AddStorageItemModal({
     if (isOpen) {
       fetchProductSeries();
     }
-  }, [isOpen]);
+  }, [isOpen, supabase]);
 
   // Handle form input changes
   const handleInputChange = (

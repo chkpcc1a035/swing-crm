@@ -1,12 +1,10 @@
 "use client";
 
 import LoadingSpinner from "@/components/LoadingSpinner";
-import { useSession } from "@supabase/auth-helpers-react";
 import { useRouter } from "next/router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import HeaderIcon from "./HeaderIcon";
 import Image from "next/image";
-import { initFlowbite } from "flowbite";
 import NavBarStorageLi from "./NavBarStorageLi";
 import { FaSearch } from "react-icons/fa";
 import { BiSolidDashboard } from "react-icons/bi";
@@ -15,39 +13,39 @@ import { IoMdHelpCircle } from "react-icons/io";
 import { Button } from "flowbite-react";
 import { useTheme } from "@/components/ThemeProvider";
 import Footer from "./Footer";
-import { supabase } from "@/utils/supabase";
+import { createBrowserClient } from "@supabase/ssr";
 
 interface AppShellProps {
   children: React.ReactNode;
 }
 
 export default function AppShell({ children }: AppShellProps) {
-  const session = useSession();
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
   const { darkMode, toggleDarkMode } = useTheme();
 
   useEffect(() => {
-    const checkAuth = async () => {
+    const checkSession = async () => {
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+
       const {
         data: { session },
       } = await supabase.auth.getSession();
+
       if (!session) {
-        localStorage.setItem("lastPath", window.location.pathname);
-        router.push("/");
+        console.log("No session found in AppShell, redirecting to /");
+        router.replace("/");
       }
+      setIsLoading(false);
     };
 
-    checkAuth();
-    initFlowbite();
+    checkSession();
   }, [router]);
 
-  useEffect(() => {
-    if (!session) {
-      router.push("/");
-    }
-  }, [session, router]);
-
-  if (!session) {
+  if (isLoading) {
     return <LoadingSpinner />;
   }
 

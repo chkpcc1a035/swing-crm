@@ -3,76 +3,58 @@ import { Button } from "flowbite-react";
 import { useEffect, useState } from "react";
 import AddStorageItemModal from "@/components/AddStorageItemModal";
 import { initFlowbite } from "flowbite";
-import { createClient } from "@/utils/supabase/static-props";
+import { createClient } from "@/utils/supabase/server-props";
+
 import { Inventory } from "@/types";
 import StorageTable from "@/components/StorageTable";
 import { FaPlus } from "react-icons/fa";
 import { useRouter } from "next/navigation";
+import { GetServerSideProps } from "next";
+
 // import { useTheme } from "@/components/ThemeProvider";
 
-export async function getStaticProps() {
-  const supabase = createClient();
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const supabase = createClient(context);
 
   try {
-    const { data, error } = await supabase.from("inventory").select(`
-        *,
-        product_series:product_series_id (
-          id,
-          series_name
-        )
-      `);
-
-    if (error) {
-      console.error("Error in getStaticProps:", error);
-      return {
-        props: {},
-        revalidate: 60,
-      };
-    }
-
-    // Now fetch the actual data
-    if (!data || data.length === 0) {
-      console.log("No data found in inventory table");
-      return {
-        props: {
-          data: [],
-        },
-        revalidate: 60,
-      };
-    }
-
-    // Ensure dates are serialized properly
-    const serializedData = data.map((item) => ({
-      ...item,
-      created_at: item.created_at?.toString(),
-      website_status: item.website_status
-        ? JSON.parse(JSON.stringify(item.website_status))
-        : null,
-      product_info: item.product_info
-        ? JSON.parse(JSON.stringify(item.product_info))
-        : null,
-    }));
-
-    // Log the shape of the data we're returning
-    console.log("Returning data shape:", {
-      dataLength: serializedData?.length,
-      firstRecord: serializedData?.[0],
+    const {
+      data: { session },
+      error,
+    } = await supabase.auth.getSession();
+    console.log("Auth check in storage getServerSideProps:", {
+      session,
+      error,
     });
+
+    if (error || !session) {
+      console.log("No session in storage, redirecting to login");
+      return {
+        redirect: {
+          destination: "/",
+          permanent: false,
+        },
+      };
+    }
+
+    const { data: inventoryData } = await supabase
+      .from("inventory")
+      .select("*");
 
     return {
       props: {
-        data: serializedData,
+        data: inventoryData || [],
       },
-      revalidate: 60,
     };
-  } catch (e) {
-    console.error("Unexpected error in getStaticProps:", e);
+  } catch (error) {
+    console.error("Error in getServerSideProps:", error);
     return {
-      props: {},
-      revalidate: 60,
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
     };
   }
-}
+};
 
 export default function StorageManagement({ data }: { data?: Inventory[] }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -80,28 +62,16 @@ export default function StorageManagement({ data }: { data?: Inventory[] }) {
   // const { darkMode } = useTheme();
 
   useEffect(() => {
-    initFlowbite();
-  }, []);
-
-  // Add debug logging effect
-  useEffect(() => {
     console.log("Storage Management Data:", data);
+    initFlowbite();
   }, [data]);
-
-  // Handle successful submission
-  const handleSuccess = () => {
-    // Refresh the page to get new data
-    router.refresh();
-    // Or alternatively:
-    // window.location.reload();
-  };
 
   return (
     <AppShell>
       <AddStorageItemModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSuccess={handleSuccess}
+        onSuccess={() => router.refresh()}
       />
       <div className="p-4">
         <div className="flex justify-between items-center mb-4">
