@@ -28,3 +28,9 @@ export interface Inventory {
     series_name: string;
   };
 }
+
+export interface ViewStorageDetailModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  item: Inventory | null;
+}

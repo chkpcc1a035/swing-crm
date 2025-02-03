@@ -28,7 +28,7 @@ export default function Footer() {
             </li>
           </ul> */}
           <span className="text-sm text-gray-500 dark:text-gray-400">
-            Version 0.0.5-alpha
+            Version 0.0.6-alpha
           </span>
           <span className="text-sm text-gray-500 dark:text-gray-400">
             © {new Date().getFullYear()}{" "}
