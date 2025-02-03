@@ -1,10 +1,10 @@
-import { MdOutlineInventory2 } from "react-icons/md";
-import { FaWarehouse } from "react-icons/fa";
-import { BiCategory } from "react-icons/bi";
+import { MdPayments } from "react-icons/md";
+import { FaCreditCard } from "react-icons/fa";
+import { FaMoneyBillTransfer } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
 import { useDropdownStore } from "@/store/useDropdownStore";
 
-export default function NavBarStorageLi() {
+export default function NavBarPaymentLi() {
   const { isOpen, toggle } = useDropdownStore();
   const router = useRouter();
 
@@ -19,12 +19,12 @@ export default function NavBarStorageLi() {
         type="button"
         onClick={toggle}
         className="flex items-center p-2 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
-        aria-controls="dropdown-storage"
-        data-collapse-toggle="dropdown-storage"
+        aria-controls="dropdown-payment"
+        data-collapse-toggle="dropdown-payment"
       >
-        <MdOutlineInventory2 className="min-w-[24px] h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" />
+        <MdPayments className="min-w-[24px] h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" />
         <span className="flex-1 ml-3 text-left whitespace-nowrap overflow-hidden text-ellipsis">
-          Storage
+          Payment
         </span>
         <svg
           className={`min-w-[24px] h-6 transition-transform duration-200 ${
@@ -42,28 +42,28 @@ export default function NavBarStorageLi() {
         </svg>
       </button>
       <ul
-        id="dropdown-storage"
+        id="dropdown-payment"
         className={`${isOpen ? "block" : "hidden"} py-2 space-y-1 mt-1`}
       >
         <li>
           <button
-            onClick={() => handleNavigation("storage")}
+            onClick={() => handleNavigation("payment")}
             className="flex items-center w-full p-2 pl-11 text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
           >
             <div className="flex items-center gap-2 min-w-0">
-              <FaWarehouse className="flex-shrink-0 w-4 h-4" />
-              <span className="truncate">Storage Management</span>
+              <FaCreditCard className="flex-shrink-0 w-4 h-4" />
+              <span className="truncate">Payment Management</span>
             </div>
           </button>
         </li>
         <li>
           <button
-            onClick={() => handleNavigation("category")}
+            onClick={() => handleNavigation("payment")}
             className="flex items-center w-full p-2 pl-11 text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
           >
             <div className="flex items-center gap-2 min-w-0">
-              <BiCategory className="flex-shrink-0 w-4 h-4" />
-              <span className="truncate">Category Management</span>
+              <FaMoneyBillTransfer className="flex-shrink-0 w-4 h-4" />
+              <span className="truncate">Payment Gateway Management</span>
             </div>
           </button>
         </li>
