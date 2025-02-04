@@ -1,5 +1,4 @@
 import AppShell from "@/components/AppShell";
-import { Button } from "flowbite-react";
 import { useEffect, useState } from "react";
 import AddStorageItemModal from "@/components/AddStorageItemModal";
 import { initFlowbite } from "flowbite";
@@ -97,15 +96,12 @@ export default function StorageManagement({ data }: { data?: Inventory[] }) {
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             Storage Management
           </h1>
-          <Button
+          <button
             onClick={() => setIsModalOpen(true)}
-            className="inline-flex items-center justify-center whitespace-nowrap text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center gap-2"
           >
-            <div className="inline-flex items-center justify-center gap-2 relative top-[0.5px]">
-              <FaPlus className="h-4 w-4" />
-              <span>Add Storage</span>
-            </div>
-          </Button>
+            <FaPlus /> Add Storage
+          </button>
         </div>
 
         {/* Search Bar */}

@@ -6,6 +6,7 @@ import { useTheme } from "@/components/ThemeProvider";
 import EditStorageModal from "./EditStorageModal";
 import DeleteConfirmationModal from "./DeleteConfirmationModal";
 import { useSession } from "@supabase/auth-helpers-react";
+import PreDeleteConfirmationModal from "./PreDeleteConfirmationModal";
 
 export default function StorageTable({ data }: { data?: Inventory[] }) {
   const [error] = useState<string | null>(null);
@@ -23,6 +24,7 @@ export default function StorageTable({ data }: { data?: Inventory[] }) {
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showPreDeleteModal, setShowPreDeleteModal] = useState(false);
   const session = useSession();
 
   useEffect(() => {
@@ -86,9 +88,25 @@ export default function StorageTable({ data }: { data?: Inventory[] }) {
 
   const handleSave = async (updatedItem: Inventory) => {
     try {
-      // Add your API call here to save the updated item
-      console.log("Saving updated item:", updatedItem);
-      // Refresh the data after successful save
+      // Remove product_series from the update data
+      const { ...updateData } = updatedItem;
+
+      const response = await fetch("/api/updateStorage", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify(updateData),
+      });
+
+      const data = await response.json();
+      if (!data.success) {
+        throw new Error(data.message);
+      }
+
+      // Refresh the page to show updated data
+      window.location.reload();
     } catch (error) {
       console.error("Error saving item:", error);
       throw error;
@@ -135,12 +153,6 @@ export default function StorageTable({ data }: { data?: Inventory[] }) {
   const handleBulkDelete = async () => {
     if (selectedItems.size === 0) return;
 
-    const confirmDelete = window.confirm(
-      `Are you sure you want to delete ${selectedItems.size} items?`
-    );
-
-    if (!confirmDelete) return;
-
     try {
       setIsDeleting(true);
       const response = await fetch("/api/deleteStorage", {
@@ -166,6 +178,7 @@ export default function StorageTable({ data }: { data?: Inventory[] }) {
     } finally {
       setIsDeleting(false);
       setSelectedItems(new Set());
+      setShowDeleteModal(false);
     }
   };
 
@@ -187,6 +200,21 @@ export default function StorageTable({ data }: { data?: Inventory[] }) {
       newSelected.add(itemId);
     }
     setSelectedItems(newSelected);
+  };
+
+  // Update the existing bulk delete button click handler
+  const handleBulkDeleteClick = () => {
+    if (selectedItems.size > 1) {
+      setShowPreDeleteModal(true);
+    } else {
+      setShowDeleteModal(true);
+    }
+  };
+
+  // Add new handler for proceeding to final delete confirmation
+  const handleProceedToDelete = () => {
+    setShowPreDeleteModal(false);
+    setShowDeleteModal(true);
   };
 
   if (error) {
@@ -456,7 +484,7 @@ export default function StorageTable({ data }: { data?: Inventory[] }) {
           <button
             className={`px-4 py-2 text-sm text-white bg-red-500 rounded hover:bg-red-600
               ${isDeleting ? "opacity-50 cursor-not-allowed" : ""}`}
-            onClick={handleBulkDelete}
+            onClick={handleBulkDeleteClick}
             disabled={isDeleting}
           >
             {isDeleting ? "Deleting..." : "Delete Selected"}
@@ -471,11 +499,22 @@ export default function StorageTable({ data }: { data?: Inventory[] }) {
         </div>
       )}
 
+      <PreDeleteConfirmationModal
+        isOpen={showPreDeleteModal}
+        onClose={() => setShowPreDeleteModal(false)}
+        onConfirm={handleProceedToDelete}
+        selectedCount={selectedItems.size}
+        selectedItems={selectedItems}
+        inventory={inventory}
+      />
+
       <DeleteConfirmationModal
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
-        onConfirm={handleDelete}
+        onConfirm={selectedItems.size > 0 ? handleBulkDelete : handleDelete}
         item={selectedItem}
+        items={selectedItems}
+        inventory={inventory}
         isDeleting={isDeleting}
         imageUrl={
           selectedItem

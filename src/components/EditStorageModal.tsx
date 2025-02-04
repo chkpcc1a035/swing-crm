@@ -1,6 +1,7 @@
 import { Inventory } from "@/types";
 import { useEffect, useState, useRef } from "react";
 import { useTheme } from "@/components/ThemeProvider";
+import { useSession } from "@supabase/auth-helpers-react";
 import {
   FiX,
   FiSave,
@@ -17,7 +18,13 @@ import {
   FiTruck,
   FiEdit,
   FiGrid,
+  FiPlus,
 } from "react-icons/fi";
+
+interface ProductSeries {
+  id: number;
+  series_name: string;
+}
 
 interface EditStorageModalProps {
   isOpen: boolean;
@@ -37,6 +44,10 @@ export default function EditStorageModal({
   const [formData, setFormData] = useState<Partial<Inventory>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("basic");
+  const [categories, setCategories] = useState<ProductSeries[]>([]);
+  const [newCategory, setNewCategory] = useState("");
+  const [isAddingCategory, setIsAddingCategory] = useState(false);
+  const session = useSession();
 
   useEffect(() => {
     if (item) {
@@ -62,6 +73,47 @@ export default function EditStorageModal({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isOpen, onClose]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch("/api/getCategories", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            // Add auth header if needed
+            ...(session?.access_token && {
+              Authorization: `Bearer ${session.access_token}`,
+            }),
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+          throw new TypeError("Response was not JSON");
+        }
+
+        const data = await response.json();
+        if (data.success) {
+          setCategories(data.data);
+        } else {
+          console.error("API Error:", data.message);
+        }
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        // Optionally show user-friendly error message
+        // alert("Failed to load categories. Please try again.");
+      }
+    };
+
+    if (isOpen) {
+      fetchCategories();
+    }
+  }, [isOpen, session?.access_token]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,6 +145,39 @@ export default function EditStorageModal({
   } focus:ring-2 focus:ring-blue-500 focus:ring-opacity-20 transition-colors`;
 
   const labelClassName = "block mb-2 font-medium text-sm";
+
+  const handleAddCategory = async () => {
+    if (!newCategory.trim()) return;
+
+    setIsAddingCategory(true);
+    try {
+      const response = await fetch("/api/addCategory", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify({ series_name: newCategory.trim() }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setCategories([...categories, data.data]);
+        setFormData((prev) => ({
+          ...prev,
+          product_series: data.data,
+        }));
+        setNewCategory("");
+      } else {
+        alert(data.message || "Failed to add category");
+      }
+    } catch (error) {
+      console.error("Error adding category:", error);
+      alert("Failed to add category");
+    } finally {
+      setIsAddingCategory(false);
+    }
+  };
 
   if (!isOpen || !item) return null;
 
@@ -257,13 +342,46 @@ export default function EditStorageModal({
                       Category
                     </div>
                   </label>
-                  <input
-                    type="text"
-                    name="product_series.series_name"
-                    value={formData.product_series?.series_name || ""}
-                    onChange={handleChange}
-                    className={inputClassName}
-                  />
+                  <div className="flex gap-2">
+                    <select
+                      name="product_series"
+                      value={formData.product_series_id || ""}
+                      onChange={(e) => {
+                        const selectedCategory = categories.find(
+                          (cat) => cat.id.toString() === e.target.value
+                        );
+                        setFormData((prev) => ({
+                          ...prev,
+                          product_series_id: selectedCategory
+                            ? selectedCategory.id.toString()
+                            : undefined,
+                        }));
+                      }}
+                      className={`${inputClassName} flex-1`}
+                    >
+                      <option value="">Select a category</option>
+                      {categories.map((category) => (
+                        <option
+                          key={category.id}
+                          value={category.id.toString()}
+                        >
+                          {category.series_name}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      onClick={() => setIsAddingCategory(true)}
+                      className={`px-3 rounded-lg transition-colors
+                        ${
+                          darkMode
+                            ? "bg-gray-700 hover:bg-gray-600 text-white"
+                            : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                        }`}
+                    >
+                      <FiPlus className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -424,6 +542,67 @@ export default function EditStorageModal({
           </div>
         </form>
       </div>
+
+      {isAddingCategory && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]"
+          onMouseDown={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div
+            className={`p-6 rounded-lg shadow-lg max-w-md w-full mx-4 ${
+              darkMode ? "bg-gray-800" : "bg-white"
+            }`}
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3
+              className={`text-lg font-bold mb-4 ${
+                darkMode ? "text-gray-100" : "text-gray-900"
+              }`}
+            >
+              Add New Category
+            </h3>
+            <input
+              type="text"
+              value={newCategory}
+              onChange={(e) => setNewCategory(e.target.value)}
+              className={inputClassName}
+              placeholder="Enter category name"
+              onMouseDown={(e) => e.stopPropagation()}
+            />
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsAddingCategory(false);
+                }}
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  darkMode
+                    ? "bg-gray-700 hover:bg-gray-600 text-white"
+                    : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                }`}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={handleAddCategory}
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  darkMode
+                    ? "bg-blue-600 hover:bg-blue-700 text-white"
+                    : "bg-blue-500 hover:bg-blue-600 text-white"
+                }`}
+              >
+                Add Category
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

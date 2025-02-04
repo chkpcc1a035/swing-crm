@@ -8,7 +8,9 @@ interface DeleteConfirmationModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
-  item: Inventory | null;
+  item?: Inventory | null;
+  items?: Set<string>;
+  inventory?: Inventory[];
   isDeleting: boolean;
   imageUrl?: string;
 }
@@ -18,10 +20,13 @@ export default function DeleteConfirmationModal({
   onClose,
   onConfirm,
   item,
+  items,
+  inventory,
   isDeleting,
   imageUrl,
 }: DeleteConfirmationModalProps) {
   const [imageError, setImageError] = useState(false);
+  const isMultipleDelete = items && items.size > 0;
 
   // Reset image error state when modal opens/closes or item changes
   useEffect(() => {
@@ -56,10 +61,40 @@ export default function DeleteConfirmationModal({
       <Modal.Body>
         <div className="text-center">
           <HiOutlineExclamationCircle className="mx-auto mb-4 h-14 w-14 text-gray-400 dark:text-gray-200" />
-          <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
-            Are you sure you want to delete this item?
-          </h3>
-          {item && (
+          {isMultipleDelete ? (
+            <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
+              Are you sure you want to delete {items.size} items?
+            </h3>
+          ) : (
+            <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
+              Are you sure you want to delete this item?
+            </h3>
+          )}
+
+          {isMultipleDelete && inventory && (
+            <div className="mb-5 max-h-40 overflow-y-auto">
+              <div className="space-y-2">
+                {Array.from(items).map((id) => {
+                  const selectedItem = inventory.find((i) => i.id === id);
+                  return (
+                    <div
+                      key={id}
+                      className="p-2 bg-gray-50 dark:bg-gray-700 rounded"
+                    >
+                      <p className="text-sm text-gray-900 dark:text-gray-100">
+                        {selectedItem?.product_info?.productDescription}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        SKU: {selectedItem?.sku_number}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {!isMultipleDelete && item && (
             <div className="mb-5 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
               <div className="flex items-center gap-4">
                 <div className="relative w-16 h-16 flex-shrink-0">
@@ -81,13 +116,14 @@ export default function DeleteConfirmationModal({
               </div>
             </div>
           )}
+
           <div className="flex justify-center gap-4">
             <button
               onClick={onConfirm}
               disabled={isDeleting}
               className="inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-red-600 rounded-lg hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-900 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isDeleting ? "Deleting..." : "Yes, delete it"}
+              {isDeleting ? "Deleting..." : "Yes, delete"}
             </button>
             <button
               onClick={onClose}
