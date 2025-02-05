@@ -1,36 +1,44 @@
 import { useState, useEffect } from "react";
 import CategoryProductsModal from "./CategoryProductsModal";
 import { useTheme } from "@/components/ThemeProvider";
+import { Toast } from "flowbite-react";
+import { HiCheck, HiX } from "react-icons/hi";
 
 interface Category {
   id: string;
   series_name: string;
   created_at: string;
+  product_count?: number;
 }
 
 interface CategoryTableProps {
   categories: Category[];
   onDelete: (ids: string[]) => Promise<void>;
   isDeleting: boolean;
+  onRefresh: () => Promise<void>;
 }
 
 export default function CategoryTable({
   categories,
-  //   onDelete,
+  // onDelete,
   isDeleting,
+  onRefresh,
 }: CategoryTableProps) {
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(
     null
   );
   const [showProductsModal, setShowProductsModal] = useState(false);
-  //   const [setShowDeleteModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const { darkMode } = useTheme();
   const [contextMenu, setContextMenu] = useState<{
     x: number;
     y: number;
     show: boolean;
   }>({ x: 0, y: 0, show: false });
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastType, setToastType] = useState<"success" | "error">("success");
 
   // Add click outside handler
   useEffect(() => {
@@ -67,19 +75,55 @@ export default function CategoryTable({
     } else {
       newSelected.add(itemId);
     }
+    console.log(newSelected);
     setSelectedItems(newSelected);
   };
 
-  //   const handleDelete = async () => {
-  //     try {
-  //       await onDelete(Array.from(selectedItems));
-  //       setSelectedItems(new Set());
-  //     //   setShowDeleteModal(false);
-  //       setContextMenu({ ...contextMenu, show: false });
-  //     } catch (error) {
-  //       console.error("Error in handleDelete:", error);
-  //     }
-  //   };
+  const showNotification = (message: string, type: "success" | "error") => {
+    setToastMessage(message);
+    setToastType(type);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
+  };
+
+  const handleDelete = async () => {
+    if (selectedItems.size === 0) {
+      showNotification("No categories selected", "error");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/deleteCategories", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          categoryIds: Array.from(selectedItems),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        showNotification(
+          data.message || "Categories deleted successfully",
+          "success"
+        );
+        setSelectedItems(new Set());
+        setShowDeleteModal(false);
+        await onRefresh();
+      } else {
+        throw new Error(data.message || "Failed to delete categories");
+      }
+    } catch (error) {
+      console.error("Error in handleDelete:", error);
+      showNotification(
+        error instanceof Error ? error.message : "Failed to delete categories",
+        "error"
+      );
+    }
+  };
 
   const handleViewProducts = () => {
     setShowProductsModal(true);
@@ -87,8 +131,14 @@ export default function CategoryTable({
   };
 
   const handleDeleteClick = () => {
+    if (selectedCategory) {
+      // Clear any existing selections and set only the current category
+      setSelectedItems(new Set([selectedCategory.id]));
+
+      console.log("selectedCategory", selectedCategory);
+    }
     setContextMenu({ ...contextMenu, show: false });
-    // setShowDeleteModal(true);
+    setShowDeleteModal(true);
   };
 
   return (
@@ -244,7 +294,7 @@ export default function CategoryTable({
           <button
             className={`px-4 py-2 text-sm text-white bg-red-500 rounded hover:bg-red-600
               ${isDeleting ? "opacity-50 cursor-not-allowed" : ""}`}
-            // onClick={() => setShowDeleteModal(true)}
+            onClick={() => setShowDeleteModal(true)}
             disabled={isDeleting}
           >
             {isDeleting ? "Deleting..." : "Delete Selected"}
@@ -259,6 +309,59 @@ export default function CategoryTable({
         </div>
       )}
 
+      {/* Add Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl max-w-md w-full">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Confirm Delete
+            </h3>
+            <div className="text-gray-600 dark:text-gray-300 mb-6">
+              {selectedItems.size === 1 && selectedCategory ? (
+                <>
+                  Are you sure you want to delete category &ldquo;
+                  {selectedCategory.series_name}&rdquo;? This will also delete
+                  all associated inventory items.
+                </>
+              ) : (
+                <>
+                  <p className="mb-2">
+                    Are you sure you want to delete {selectedItems.size}{" "}
+                    categories? This will delete the following categories and
+                    all their associated inventory items:
+                  </p>
+                  <ul className="mt-2 ml-4 list-disc">
+                    {Array.from(selectedItems).map((id) => {
+                      const category = categories.find((c) => c.id === id);
+                      return category ? (
+                        <li key={id}>{category.series_name}</li>
+                      ) : null;
+                    })}
+                  </ul>
+                </>
+              )}
+            </div>
+            <div className="flex justify-end gap-4">
+              <button
+                className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
+                onClick={() => setShowDeleteModal(false)}
+                disabled={isDeleting}
+              >
+                Cancel
+              </button>
+              <button
+                className={`px-4 py-2 text-sm text-white bg-red-500 rounded hover:bg-red-600
+                  ${isDeleting ? "opacity-50 cursor-not-allowed" : ""}`}
+                onClick={handleDelete}
+                disabled={isDeleting}
+              >
+                {isDeleting ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {selectedCategory && (
         <CategoryProductsModal
           isOpen={showProductsModal}
@@ -269,6 +372,25 @@ export default function CategoryTable({
           categoryId={selectedCategory.id}
           categoryName={selectedCategory.series_name}
         />
+      )}
+
+      {/* Flowbite Toast */}
+      {showToast && (
+        <div className="fixed top-5 right-5 z-50">
+          <Toast>
+            {toastType === "success" ? (
+              <div className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-green-100 text-green-500 dark:bg-green-800 dark:text-green-200">
+                <HiCheck className="h-5 w-5" />
+              </div>
+            ) : (
+              <div className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-red-100 text-red-500 dark:bg-red-800 dark:text-red-200">
+                <HiX className="h-5 w-5" />
+              </div>
+            )}
+            <div className="ml-3 text-sm font-normal">{toastMessage}</div>
+            <Toast.Toggle onDismiss={() => setShowToast(false)} />
+          </Toast>
+        </div>
       )}
     </>
   );

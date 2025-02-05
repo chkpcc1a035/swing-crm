@@ -21,21 +21,23 @@ export default function CategoryManagement() {
   const { darkMode } = useTheme();
   const [error, setError] = useState<string>("");
 
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
   const fetchCategories = async () => {
     try {
+      console.log("Fetching categories...");
       const response = await fetch("/api/fetchCategories");
       const data = await response.json();
       if (data.success) {
+        console.log("Categories fetched:", data.data);
         setCategories(data.data);
       }
     } catch (error) {
       console.error("Error fetching categories:", error);
     }
   };
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
 
   const handleDelete = async (ids: string[]) => {
     try {
@@ -46,7 +48,7 @@ export default function CategoryManagement() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${session?.access_token}`,
         },
-        body: JSON.stringify({ ids }),
+        body: JSON.stringify({ categoryIds: ids }),
       });
 
       const result = await response.json();
@@ -54,6 +56,7 @@ export default function CategoryManagement() {
         throw new Error(result.message);
       }
 
+      // Refresh the categories list after successful deletion
       await fetchCategories();
     } catch (error) {
       console.error("Error deleting categories:", error);
@@ -85,6 +88,7 @@ export default function CategoryManagement() {
         return;
       }
 
+      // Refresh the categories list after successful addition
       await fetchCategories();
       setNewCategoryName("");
       setIsModalOpen(false);
@@ -113,6 +117,7 @@ export default function CategoryManagement() {
           categories={categories}
           onDelete={handleDelete}
           isDeleting={isDeleting}
+          onRefresh={fetchCategories}
         />
 
         {/* Add Category Modal */}
