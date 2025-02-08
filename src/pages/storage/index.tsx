@@ -9,6 +9,7 @@ import StorageTable from "@/components/StorageTable";
 import { FaPlus, FaSearch } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { GetServerSideProps } from "next";
+import BatchUploadModal from "@/components/BatchUploadModal";
 
 // import { useTheme } from "@/components/ThemeProvider";
 
@@ -61,7 +62,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 };
 
 export default function StorageManagement({ data }: { data?: Inventory[] }) {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalType, setModalType] = useState<"add" | "batch" | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const router = useRouter();
   // const { darkMode } = useTheme();
@@ -86,22 +87,39 @@ export default function StorageManagement({ data }: { data?: Inventory[] }) {
 
   return (
     <AppShell>
-      <AddStorageItemModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSuccess={() => router.refresh()}
-      />
+      {modalType === "add" && (
+        <AddStorageItemModal
+          isOpen={true}
+          onClose={() => setModalType(null)}
+          onSuccess={() => router.refresh()}
+        />
+      )}
+      {modalType === "batch" && (
+        <BatchUploadModal
+          isOpen={true}
+          onClose={() => setModalType(null)}
+          onSuccess={() => router.refresh()}
+        />
+      )}
       <div className="p-4">
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             Storage Management
           </h1>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center gap-2"
-          >
-            <FaPlus /> Add Storage
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setModalType("batch")}
+              className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 flex items-center gap-2"
+            >
+              <FaPlus /> Batch Upload
+            </button>
+            <button
+              onClick={() => setModalType("add")}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center gap-2"
+            >
+              <FaPlus /> Add Storage
+            </button>
+          </div>
         </div>
 
         {/* Search Bar */}
