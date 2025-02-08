@@ -252,6 +252,9 @@ export default function StorageTable({ data }: { data?: Inventory[] }) {
                 Location
               </th>
               <th scope="col" className="p-4 text-left">
+                Event Location
+              </th>
+              <th scope="col" className="p-4 text-left">
                 SKU
               </th>
               <th scope="col" className="p-4 text-left">
@@ -326,6 +329,9 @@ export default function StorageTable({ data }: { data?: Inventory[] }) {
                 </td>
                 <td className="p-4 text-gray-900 dark:text-white">
                   {item.stock_location}
+                </td>
+                <td className="p-4 text-gray-900 dark:text-white">
+                  {item.event_location}
                 </td>
                 <td className="p-4 text-gray-900 dark:text-white">
                   {item.sku_number}

@@ -338,6 +338,24 @@ export default function EditStorageModal({
                 <div>
                   <label className={labelClassName}>
                     <div className="flex items-center gap-2">
+                      <FiMapPin className="w-4 h-4" />
+                      Event Location
+                    </div>
+                  </label>
+                  <input
+                    type="text"
+                    name="event_location"
+                    value={formData.event_location || ""}
+                    onChange={handleChange}
+                    className={inputClassName}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <label className={labelClassName}>
+                    <div className="flex items-center gap-2">
                       <FiGrid className="w-4 h-4" />
                       Category
                     </div>

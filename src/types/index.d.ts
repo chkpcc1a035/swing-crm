@@ -27,6 +27,7 @@ export interface Inventory {
     description?: string;
     series_name: string;
   };
+  event_location: string;
 }
 
 export interface ViewStorageDetailModalProps {

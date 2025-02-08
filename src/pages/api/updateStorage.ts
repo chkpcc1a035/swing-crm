@@ -37,11 +37,23 @@ export default async function handler(
       });
     }
 
+    // Update inventory with the correct product_series_id
     const { data, error } = await supabase
       .from("inventory")
-      .update(updateData)
+      .update({
+        ...updateData,
+        product_series_id: updateData.product_series_id || null,
+      })
       .eq("id", id)
-      .select()
+      .select(
+        `
+        *,
+        product_series (
+          id,
+          series_name
+        )
+      `
+      )
       .single();
 
     if (error) {
