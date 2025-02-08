@@ -168,6 +168,17 @@ export default function ViewStorageDetailModal({
                 }`}
               >
                 <p className="font-semibold flex items-center gap-2 mb-1">
+                  <FiMapPin className="w-4 h-4" />
+                  Event Location
+                </p>
+                <p>{item?.event_location || "-"}</p>
+              </div>
+              <div
+                className={`p-3 rounded-lg ${
+                  darkMode ? "bg-gray-700" : "bg-gray-50"
+                }`}
+              >
+                <p className="font-semibold flex items-center gap-2 mb-1">
                   <FiBox className="w-4 h-4" />
                   Category
                 </p>
