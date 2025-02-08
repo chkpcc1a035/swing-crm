@@ -113,6 +113,7 @@ export default async function handler(
         sku_number: item.sku_number || item["產品編號SKU Number"],
         product_number: item.product_number || item["產品編號Product Number"],
         stock_location: item.stock_location || item["庫存位置Stock Location"],
+        event_location: item.event_location || item["市集位置"],
         quantity: parseInt(
           String(item.quantity || item["數量Quantity"] || "0")
         ),

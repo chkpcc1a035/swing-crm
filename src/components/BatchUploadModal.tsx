@@ -43,18 +43,19 @@ export default function BatchUploadModal({
   const downloadTemplate = (format: "xlsx" | "csv") => {
     const template = [
       {
-        sku_number: "BDSP02002",
-        product_number: "ZCC-12345",
-        stock_location: "56",
-        quantity: 12,
-        wholesale_price: 100,
-        cost_price: 80,
-        delivery_fee: 5,
-        retail_price: 120,
-        unit_price: 10,
-        stock_qty: 100,
-        description: "Product description",
-        product_series_id: "series-uuid",
+        "產品編號SKU Number": "BDSP02002",
+        "產品編號Product Number": "ZCC-12345",
+        "庫存位置Stock Location": "56",
+        市集位置: "A1",
+        數量Quantity: 12,
+        "批發價Wholesale Price": 100,
+        "成本價Cost Price": 80,
+        "運費Delivery Fee": 5,
+        "零售價Retail Price": 120,
+        "單價Unit Price": 10,
+        "庫存數量Stock Quantity": 100,
+        "產品描述Product Description": "Product description",
+        "產品系列Product Series": "Series Name",
       },
     ];
 
@@ -108,19 +109,15 @@ export default function BatchUploadModal({
         body: formData,
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
       const result = await response.json();
 
-      if (result.success) {
-        showToast("Batch upload completed successfully!", "success");
-        if (onSuccess) onSuccess();
-        onClose();
-      } else {
+      if (!result.success) {
         throw new Error(result.message || "Upload failed");
       }
+
+      showToast(`Successfully uploaded ${result.count} items!`, "success");
+      if (onSuccess) onSuccess();
+      onClose();
     } catch (error) {
       console.error("Upload error:", error);
       showToast(
