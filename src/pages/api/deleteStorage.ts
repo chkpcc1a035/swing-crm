@@ -77,7 +77,48 @@ export default async function handler(
       });
     }
 
-    // Perform the deletion
+    // First, get the records with their image paths before deletion
+    const { data: recordsToDelete, error: fetchError } = await supabase
+      .from("inventory")
+      .select(
+        `
+        id,
+        product_info->productImagePath
+      `
+      )
+      .in("id", ids);
+
+    if (fetchError) {
+      console.error("💥 Error fetching records:", fetchError);
+      return res.status(500).json({
+        success: false,
+        message: fetchError.message,
+        details: fetchError,
+      });
+    }
+
+    // Delete images from storage bucket if they exist
+    const deleteImagePromises = recordsToDelete
+      .filter((record) => record.productImagePath)
+      .map(async (record) => {
+        const imagePath = record.productImagePath as string;
+        if (!imagePath) return;
+
+        const { error: storageError } = await supabase.storage
+          .from("products") // replace with your bucket name
+          .remove([imagePath]);
+
+        if (storageError) {
+          console.error(`💥 Error deleting image ${imagePath}:`, storageError);
+        } else {
+          console.log(`✅ Successfully deleted image: ${imagePath}`);
+        }
+      });
+
+    // Wait for all image deletions to complete
+    await Promise.all(deleteImagePromises);
+
+    // Proceed with deleting the database records
     const { data, error } = await supabase
       .from("inventory")
       .delete()
