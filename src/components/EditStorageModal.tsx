@@ -19,7 +19,10 @@ import {
   FiEdit,
   FiGrid,
   FiPlus,
+  FiUpload,
+  FiImage,
 } from "react-icons/fi";
+import Image from "next/image";
 
 interface ProductSeries {
   id: number;
@@ -48,6 +51,9 @@ export default function EditStorageModal({
   const [newCategory, setNewCategory] = useState("");
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const session = useSession();
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (item) {
@@ -115,13 +121,73 @@ export default function EditStorageModal({
     }
   }, [isOpen, session?.access_token]);
 
+  useEffect(() => {
+    if (item?.product_info?.productImagePath) {
+      fetchSignedUrl(item.product_info.productImagePath);
+    }
+  }, [item]);
+
+  const fetchSignedUrl = async (path: string) => {
+    if (!path) return;
+
+    try {
+      const filename = path.split("/").pop();
+      if (!filename) return;
+
+      const response = await fetch(`/api/getSignedURL?filename=${filename}`);
+      const data = await response.json();
+
+      if (data.url) {
+        setImagePreview(data.url);
+      } else {
+        console.error("Failed to get signed URL:", data.error);
+        setImagePreview("/placeholder.png");
+      }
+    } catch (error) {
+      console.error("Error fetching signed URL:", error);
+      setImagePreview("/placeholder.png");
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!item) return;
 
     setIsLoading(true);
     try {
-      await onSave({ ...item, ...formData });
+      let imageUrl = item.product_info?.productImagePath;
+
+      if (imageFile) {
+        const formData = new FormData();
+        formData.append("file", imageFile);
+
+        const response = await fetch("/api/uploadImage", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${session?.access_token}`,
+          },
+          body: formData,
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          imageUrl = `products_image/${data.filename}`;
+        } else {
+          throw new Error("Failed to upload image");
+        }
+      }
+
+      const updatedItem = {
+        ...item,
+        ...formData,
+        product_info: {
+          ...item.product_info,
+          ...formData.product_info,
+          productImagePath: imageUrl,
+        },
+      };
+
+      await onSave(updatedItem);
       onClose();
     } catch (error) {
       console.error("Error saving item:", error);
@@ -179,7 +245,94 @@ export default function EditStorageModal({
     }
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   if (!isOpen || !item) return null;
+
+  const imageUploadSection = (
+    <div className="mb-6">
+      <label className={labelClassName}>
+        <div className="flex items-center gap-2 mb-2">
+          <FiImage className="w-4 h-4" />
+          Product Image
+        </div>
+      </label>
+      <div className="flex items-center gap-4">
+        <div
+          className={`w-32 h-32 rounded-lg border-2 border-dashed flex items-center justify-center overflow-hidden
+            ${
+              darkMode
+                ? "border-gray-600 bg-gray-700"
+                : "border-gray-300 bg-gray-50"
+            }`}
+        >
+          {imagePreview ? (
+            <Image
+              src={imagePreview}
+              alt="Preview"
+              width={128}
+              height={128}
+              className="w-full h-full object-contain"
+              onError={() => setImagePreview("/placeholder.png")}
+              unoptimized
+            />
+          ) : (
+            <FiImage className="w-8 h-8 text-gray-400" />
+          )}
+        </div>
+        <div className="flex flex-col gap-2">
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleImageChange}
+            accept="image/*"
+            className="hidden"
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className={`px-4 py-2 rounded-lg transition-colors flex items-center gap-2
+              ${
+                darkMode
+                  ? "bg-gray-700 hover:bg-gray-600 text-white"
+                  : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+              }`}
+          >
+            <FiUpload className="w-4 h-4" />
+            Upload Image
+          </button>
+          {imagePreview && (
+            <button
+              type="button"
+              onClick={() => {
+                setImageFile(null);
+                setImagePreview("");
+              }}
+              className={`px-4 py-2 rounded-lg transition-colors flex items-center gap-2
+                ${
+                  darkMode
+                    ? "bg-red-600 hover:bg-red-700 text-white"
+                    : "bg-red-500 hover:bg-red-600 text-white"
+                }`}
+            >
+              <FiX className="w-4 h-4" />
+              Remove Image
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -270,6 +423,7 @@ export default function EditStorageModal({
 
           {activeTab === "basic" && (
             <div className="space-y-6">
+              {imageUploadSection}
               <div className="grid grid-cols-2 gap-6">
                 <div>
                   <label className={labelClassName}>

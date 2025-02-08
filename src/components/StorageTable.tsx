@@ -67,9 +67,25 @@ export default function StorageTable({ data }: { data?: Inventory[] }) {
   const handleContextMenu = (e: React.MouseEvent, item: Inventory) => {
     e.preventDefault();
     setSelectedItem(item);
+
+    // Get viewport-relative coordinates by subtracting scroll position
+    const x = e.pageX - window.scrollX;
+    const y = e.pageY - window.scrollY;
+
+    // Add bounds checking to keep menu in viewport
+    const menuWidth = 192; // w-48 = 12rem = 192px
+    const menuHeight = 144; // Approximate height of menu
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    // Adjust x position if menu would overflow right edge
+    const adjustedX = x + menuWidth > viewportWidth ? x - menuWidth : x;
+    // Adjust y position if menu would overflow bottom edge
+    const adjustedY = y + menuHeight > viewportHeight ? y - menuHeight : y;
+
     setContextMenu({
-      x: e.pageX,
-      y: e.pageY,
+      x: adjustedX,
+      y: adjustedY,
       show: true,
     });
   };

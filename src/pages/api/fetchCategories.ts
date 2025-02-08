@@ -20,14 +20,10 @@ export default async function handler(
     const { data, error } = await supabase
       .from("product_series")
       .select("*")
-      .order("series_name", { ascending: true });
+      .order("series_name");
 
     if (error) {
-      console.error("Supabase error:", error);
-      return res.status(500).json({
-        success: false,
-        message: error.message,
-      });
+      throw error;
     }
 
     return res.status(200).json({
@@ -35,10 +31,11 @@ export default async function handler(
       data: data || [],
     });
   } catch (error) {
-    console.error("Server error:", error);
+    console.error("Error fetching categories:", error);
     return res.status(500).json({
       success: false,
-      message: error instanceof Error ? error.message : "Unknown error",
+      message:
+        error instanceof Error ? error.message : "Failed to fetch categories",
     });
   }
 }
