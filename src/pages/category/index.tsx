@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import AppShell from "@/components/AppShell";
 import { useSession } from "@supabase/auth-helpers-react";
 import CategoryTable from "@/components/CategoryTable";
-import { FaPlus } from "react-icons/fa";
+import { FaPlus, FaSearch } from "react-icons/fa";
 import { useTheme } from "@/components/ThemeProvider";
 
 interface Category {
@@ -20,6 +20,7 @@ export default function CategoryManagement() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { darkMode } = useTheme();
   const [error, setError] = useState<string>("");
+  const [searchTerm, setSearchTerm] = useState("");
 
   const fetchCategories = async () => {
     try {
@@ -100,6 +101,11 @@ export default function CategoryManagement() {
     }
   };
 
+  const filteredCategories = categories.filter((category) => {
+    const searchLower = searchTerm.toLowerCase();
+    return category.series_name.toLowerCase().includes(searchLower);
+  });
+
   return (
     <AppShell>
       <div className="p-4">
@@ -113,8 +119,26 @@ export default function CategoryManagement() {
           </button>
         </div>
 
+        {/* Search Bar */}
+        <div className="relative mb-4">
+          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+            <FaSearch className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+          </div>
+          <input
+            type="text"
+            className={`block w-full p-2.5 pl-10 text-sm border rounded-lg focus:ring-blue-500 focus:border-blue-500 ${
+              darkMode
+                ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                : "bg-gray-50 border-gray-300 text-gray-900"
+            }`}
+            placeholder="Search categories..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+
         <CategoryTable
-          categories={categories}
+          categories={filteredCategories}
           onDelete={handleDelete}
           isDeleting={isDeleting}
           onRefresh={fetchCategories}

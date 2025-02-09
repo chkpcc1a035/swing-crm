@@ -14,7 +14,7 @@ import { Button } from "flowbite-react";
 import { useTheme } from "@/components/ThemeProvider";
 import Footer from "./Footer";
 import { createBrowserClient } from "@supabase/ssr";
-import NavBarPaymentLi from "./NavBarPaymentLi";
+import NavBarOrderLi from "./NavBarOrderLi";
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -716,7 +716,7 @@ export default function AppShell({ children }: AppShellProps) {
                 </a>
               </li>
               <NavBarStorageLi />
-              <NavBarPaymentLi />
+              <NavBarOrderLi />
             </ul>
             <ul className="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
               <li>

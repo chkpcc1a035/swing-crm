@@ -43,3 +43,78 @@ export interface DeleteConfirmationModalProps {
   item: Inventory | null;
   isDeleting: boolean;
 }
+
+export interface Order {
+  public: {
+    Tables: {
+      orders: {
+        Row: {
+          id: string;
+          created_at: string;
+          updated_at: string;
+          order_number: string;
+          order_type: "purchase" | "sale" | "transfer" | "return";
+          order_status: "pending" | "processing" | "completed" | "cancelled";
+          from_location: string | null;
+          to_location: string | null;
+          reference_number: string | null;
+          subtotal: number;
+          tax_amount: number;
+          shipping_fee: number;
+          total_amount: number;
+          notes: string | null;
+          metadata: Record<string, unknown> | null;
+          created_by: string | null;
+        };
+      };
+    };
+  };
+}
+
+export interface OrderTableProps {
+  id: string;
+  created_at: string;
+  reference_number: string;
+  transaction_type: string;
+  from_location: string;
+  to_location: string;
+  quantity: number;
+  unit_price: number;
+  total_amount: number;
+  inventory?: {
+    id: string;
+    sku_number: string;
+    product_number: string;
+    product_info: Record<string, unknown>;
+  };
+}
+
+export interface AddOrderModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+}
+
+export interface ProductInfo {
+  productDescription: string;
+}
+
+export interface InventoryDetails {
+  id: string;
+  sku_number: string;
+  product_number: string;
+  unit_price: number;
+  retail_price: number;
+  stock_location: string;
+  quantity: number;
+  product_info?: {
+    productDescription: string;
+  };
+}
+
+export interface OrderItem {
+  inventory_id: string;
+  inventory_details: InventoryDetails | null;
+  quantity: string;
+  unit_price: string | number;
+}

@@ -4,7 +4,7 @@ import { FaMoneyBillTransfer } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
 import { useDropdownStore } from "@/store/useDropdownStore";
 
-export default function NavBarPaymentLi() {
+export default function NavBarOrderLi() {
   const { isOpen, toggle } = useDropdownStore();
   const router = useRouter();
 
@@ -47,12 +47,12 @@ export default function NavBarPaymentLi() {
       >
         <li>
           <button
-            onClick={() => handleNavigation("payment")}
+            onClick={() => handleNavigation("order")}
             className="flex items-center w-full p-2 pl-11 text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
           >
             <div className="flex items-center gap-2 min-w-0">
               <FaCreditCard className="flex-shrink-0 w-4 h-4" />
-              <span className="truncate">Payment Management</span>
+              <span className="truncate">Order Management</span>
             </div>
           </button>
         </li>
