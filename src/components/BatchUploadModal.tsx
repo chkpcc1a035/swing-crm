@@ -10,6 +10,7 @@ import { useState } from "react";
 import { HiCheck, HiX } from "react-icons/hi";
 import { FaFileExcel, FaFileCsv } from "react-icons/fa";
 import * as XLSX from "xlsx";
+import { UploadResponse } from "@/types";
 
 interface BatchUploadModalProps {
   isOpen: boolean;
@@ -93,9 +94,16 @@ export default function BatchUploadModal({
 
   const handleUpload = async () => {
     if (!selectedFile) {
+      console.log("No file selected");
       showToast("Please select a file first", "error");
       return;
     }
+
+    console.log("Starting upload for file:", {
+      name: selectedFile.name,
+      size: selectedFile.size,
+      type: selectedFile.type,
+    });
 
     setIsUploading(true);
     setProgress(0);
@@ -104,12 +112,49 @@ export default function BatchUploadModal({
       const formData = new FormData();
       formData.append("file", selectedFile);
 
-      const response = await fetch("/api/addBatchUploadStorage", {
-        method: "POST",
-        body: formData,
+      // Debug log FormData contents
+      console.log("FormData contents:");
+      for (const pair of formData.entries()) {
+        console.log(pair[0], pair[1]);
+      }
+
+      const xhr = new XMLHttpRequest();
+
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const percentComplete = Math.round(
+            (event.loaded / event.total) * 100
+          );
+          console.log(`Upload progress: ${percentComplete}%`);
+          setProgress(percentComplete);
+        }
+      };
+
+      const uploadPromise = new Promise((resolve, reject) => {
+        xhr.onload = () => {
+          console.log("XHR response received:", {
+            status: xhr.status,
+            response: xhr.responseText,
+          });
+
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve(JSON.parse(xhr.responseText));
+          } else {
+            reject(new Error(xhr.responseText));
+          }
+        };
+        xhr.onerror = () => {
+          console.error("XHR network error:", xhr.status, xhr.statusText);
+          reject(new Error("Network error"));
+        };
       });
 
-      const result = await response.json();
+      xhr.open("POST", "/api/addBatchUploadStorage", true);
+      console.log("Sending XHR request...");
+      xhr.send(formData);
+
+      const result = (await uploadPromise) as UploadResponse;
+      console.log("Upload result:", result);
 
       if (!result.success) {
         throw new Error(result.message || "Upload failed");
@@ -119,7 +164,11 @@ export default function BatchUploadModal({
       if (onSuccess) onSuccess();
       onClose();
     } catch (error) {
-      console.error("Upload error:", error);
+      console.error("Upload error details:", {
+        error,
+        message: error instanceof Error ? error.message : "Unknown error",
+        stack: error instanceof Error ? error.stack : undefined,
+      });
       showToast(
         error instanceof Error
           ? error.message

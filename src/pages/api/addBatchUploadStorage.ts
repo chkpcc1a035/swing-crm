@@ -44,69 +44,139 @@ function decodeText(text: string): string {
   }
 }
 
-interface FormidableFile {
-  filepath: string;
-  [key: string]: string | number | boolean | undefined;
-}
-
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  console.log("API handler started", {
+    method: req.method,
+    headers: req.headers,
+    contentType: req.headers["content-type"],
+  });
+
   if (req.method !== "POST") {
+    console.log("Method not allowed:", req.method);
     return res.status(405).json({ message: "Method not allowed" });
   }
 
   try {
-    const form = formidable({});
-    const [files] = await form.parse(req);
-    const file = files.file?.[0] as unknown as FormidableFile;
+    console.log("Initializing formidable...");
+    const form = formidable({
+      keepExtensions: true,
+      maxFileSize: 10 * 1024 * 1024, // 10MB
+    });
 
-    if (!file || typeof file !== "object" || !("filepath" in file)) {
-      return res
-        .status(400)
-        .json({ success: false, message: "No file provided" });
+    console.log("Parsing form data...");
+    const parseResult = await new Promise((resolve, reject) => {
+      form.parse(req, (err, fields, files) => {
+        if (err) {
+          console.error("Form parse error:", err);
+          reject(err);
+          return;
+        }
+        resolve({ fields, files });
+      });
+    });
+
+    const { files } = parseResult as {
+      files: { file: formidable.File[] };
+    };
+
+    console.log("Form parse complete. Files received:", {
+      fileKeys: Object.keys(files),
+      fileDetails: files?.file?.[0],
+      totalFiles: files ? Object.keys(files).length : 0,
+    });
+
+    const file = files?.file?.[0];
+
+    if (!file || !file.filepath) {
+      console.error("File validation failed:", {
+        fileExists: !!file,
+        fileType: file?.mimetype,
+        originalFilename: file?.originalFilename,
+        filepath: file?.filepath,
+      });
+      return res.status(400).json({
+        success: false,
+        message: "No file provided",
+        debug: {
+          fileExists: !!file,
+          fileType: file?.mimetype,
+          originalFilename: file?.originalFilename,
+        },
+      });
     }
 
-    // Now TypeScript knows file has filepath
+    console.log("Valid file found:", {
+      type: file.mimetype,
+      name: file.originalFilename,
+      path: file.filepath,
+      size: file.size,
+    });
+
     const fileData = await fs.readFile(file.filepath);
-    const workbook = XLSX.read(fileData, {
-      type: "buffer",
-      codepage: 65001, // UTF-8
-      cellDates: true,
-      dateNF: "yyyy-mm-dd",
+    console.log("File read complete, size:", fileData.length);
+
+    // Handle both CSV and Excel files
+    let workbook;
+    if (file.mimetype === "text/csv") {
+      console.log("Processing CSV file...");
+      workbook = XLSX.read(fileData, {
+        type: "buffer",
+        raw: true,
+        codepage: 65001,
+        cellDates: true,
+        dateNF: "yyyy-mm-dd",
+      });
+    } else {
+      console.log("Processing Excel file...");
+      workbook = XLSX.read(fileData, {
+        type: "buffer",
+        codepage: 65001,
+        cellDates: true,
+        dateNF: "yyyy-mm-dd",
+      });
+    }
+
+    console.log("Workbook parsed:", {
+      sheetNames: workbook.SheetNames,
+      sheetCount: workbook.SheetNames.length,
     });
 
     const sheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[sheetName];
+    console.log("Converting sheet to JSON...");
     const rawJsonData = XLSX.utils.sheet_to_json(worksheet, {
-      raw: false, // Don't convert values
-      defval: null, // Use null for empty cells
+      raw: false,
+      defval: null,
     });
 
+    console.log("JSON conversion complete, rows:", rawJsonData.length);
+
     // Clean and decode the data
+    console.log("Processing rows...");
     const jsonData = (rawJsonData as InventoryRow[]).map(
       (row: InventoryRow) => {
         const cleanedRow: InventoryRow = {};
-
         for (const [key, value] of Object.entries(row)) {
-          // Clean the field name
           const cleanKey = cleanFieldName(key);
-
-          // Decode the value if it's a string
           const cleanValue =
             typeof value === "string" ? decodeText(value) : value;
-
           cleanedRow[cleanKey] = cleanValue;
         }
-
         return cleanedRow;
       }
     );
 
+    console.log(`Processing ${jsonData.length} items...`);
+
     // Process each row
     for (const item of jsonData) {
-      console.log("Processing item:", item); // Debug log
+      console.log("Processing item:", {
+        product_number: item.product_number || item["產品編號Product Number"],
+        sku: item.sku_number || item["產品編號SKU Number"],
+      });
 
       // Map Chinese field names to English if needed
       const mappedItem = {
@@ -213,15 +283,21 @@ export default async function handler(
     }
 
     // Clean up temporary file
+    console.log("Cleaning up temporary file...");
     await fs.unlink(file.filepath);
 
+    console.log("Processing complete");
     return res.status(200).json({
       success: true,
       message: "File processed successfully",
       count: jsonData.length,
     });
   } catch (error) {
-    console.error("Batch upload error:", error);
+    console.error("Batch upload error:", {
+      error,
+      message: error instanceof Error ? error.message : "Unknown error",
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return res.status(500).json({
       success: false,
       message:

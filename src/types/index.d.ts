@@ -118,3 +118,9 @@ export interface OrderItem {
   quantity: string;
   unit_price: string | number;
 }
+
+export interface UploadResponse {
+  success: boolean;
+  message?: string;
+  count?: number;
+}
