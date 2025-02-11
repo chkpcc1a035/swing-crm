@@ -11,6 +11,7 @@ import { HiCheck, HiX } from "react-icons/hi";
 import { FaFileExcel, FaFileCsv } from "react-icons/fa";
 import * as XLSX from "xlsx";
 import { UploadResponse } from "@/types";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface BatchUploadModalProps {
   isOpen: boolean;
@@ -182,98 +183,161 @@ export default function BatchUploadModal({
   };
 
   return (
-    <>
-      <Modal show={isOpen} onClose={onClose} size="md">
-        <Modal.Header>Batch Upload Inventory Items</Modal.Header>
-        <Modal.Body>
-          <div className="space-y-6">
-            <div>
-              <Label htmlFor="template" value="Download Template" />
-              <div className="flex gap-2 mt-2">
+    <AnimatePresence>
+      <Modal
+        show={isOpen}
+        onClose={onClose}
+        size="md"
+        className="backdrop-blur-sm"
+      >
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 20 }}
+          transition={{ duration: 0.2 }}
+        >
+          <Modal.Header className="border-b border-gray-200/10 px-6 py-4">
+            <h3 className="text-xl font-semibold text-white">
+              Batch Upload Inventory Items
+            </h3>
+          </Modal.Header>
+          <Modal.Body className="space-y-6 px-6 py-4">
+            <div className="bg-gray-800/50 p-4 rounded-lg">
+              <Label
+                htmlFor="template"
+                value="Download Template"
+                className="mb-4 text-gray-200"
+              />
+              <div className="flex gap-3 mt-3">
                 <Button
                   color="gray"
-                  className="flex-1"
+                  className="flex-1 hover:scale-105 transition-transform duration-200 bg-gray-700/50"
                   onClick={() => downloadTemplate("xlsx")}
                 >
-                  <FaFileExcel className="mr-2 h-5 w-5" />
+                  <FaFileExcel className="mr-2 h-5 w-5 text-green-500" />
                   Excel Template
                 </Button>
                 <Button
                   color="gray"
-                  className="flex-1"
+                  className="flex-1 hover:scale-105 transition-transform duration-200 bg-gray-700/50"
                   onClick={() => downloadTemplate("csv")}
                 >
-                  <FaFileCsv className="mr-2 h-5 w-5" />
+                  <FaFileCsv className="mr-2 h-5 w-5 text-blue-500" />
                   CSV Template
                 </Button>
               </div>
             </div>
 
-            <div>
-              <Label htmlFor="file_input" value="Upload File" />
-              <FileInput
-                id="file_input"
-                accept=".xlsx,.xls,.csv"
-                onChange={handleFileChange}
-                className="mt-2"
+            <div className="bg-gray-800/50 p-4 rounded-lg">
+              <Label
+                htmlFor="file_input"
+                value="Upload File"
+                className="mb-4 text-gray-200"
               />
-              <p className="mt-1 text-sm text-gray-500 dark:text-gray-300">
-                Upload Excel (.xlsx/.xls) or CSV file
-              </p>
+              <div className="relative">
+                <FileInput
+                  id="file_input"
+                  accept=".xlsx,.xls,.csv"
+                  onChange={handleFileChange}
+                  className="mt-2 bg-gray-700/50 border-gray-600 text-gray-200"
+                />
+                <p className="mt-2 text-sm text-gray-400">
+                  Upload Excel (.xlsx/.xls) or CSV file
+                </p>
+              </div>
             </div>
 
             {selectedFile && (
-              <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg dark:bg-gray-700">
-                <span className="text-sm text-gray-500 dark:text-gray-400">
-                  Selected file: {selectedFile.name}
-                </span>
-                <span className="text-xs text-gray-400">
-                  ({(selectedFile.size / 1024).toFixed(2)} KB)
-                </span>
-              </div>
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="flex items-center gap-2 p-3 bg-blue-900/20 rounded-lg border border-blue-800"
+              >
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-blue-400">
+                    {selectedFile.name}
+                  </p>
+                  <p className="text-xs text-blue-500">
+                    {(selectedFile.size / 1024).toFixed(2)} KB
+                  </p>
+                </div>
+                <Button
+                  size="xs"
+                  color="gray"
+                  onClick={() => setSelectedFile(null)}
+                  className="!p-1 bg-gray-700/50"
+                >
+                  <HiX className="h-4 w-4" />
+                </Button>
+              </motion.div>
             )}
 
             {isUploading && (
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-base font-medium text-blue-700 dark:text-white">
-                    Uploading
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700"
+              >
+                <div className="flex justify-between mb-2">
+                  <span className="text-sm font-medium text-blue-700 dark:text-blue-400">
+                    Uploading...
                   </span>
-                  <span className="text-base font-medium text-blue-700 dark:text-white">
+                  <span className="text-sm font-medium text-blue-700 dark:text-blue-400">
                     {progress}%
                   </span>
                 </div>
-                <Progress progress={progress} />
-              </div>
+                <Progress progress={progress} color="blue" className="h-2" />
+              </motion.div>
             )}
-          </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button
-            color="dark"
-            onClick={handleUpload}
-            disabled={!selectedFile || isUploading}
-          >
-            {isUploading ? "Uploading..." : "Upload"}
-          </Button>
-          <Button color="gray" onClick={onClose} disabled={isUploading}>
-            Cancel
-          </Button>
-        </Modal.Footer>
+          </Modal.Body>
+          <Modal.Footer className="border-t border-gray-200/10 px-6 py-4">
+            <Button
+              color="blue"
+              onClick={handleUpload}
+              disabled={!selectedFile || isUploading}
+              className="hover:scale-105 transition-transform duration-200"
+            >
+              {isUploading ? (
+                <div className="flex items-center gap-2">
+                  <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+                  Uploading...
+                </div>
+              ) : (
+                "Upload"
+              )}
+            </Button>
+            <Button
+              color="gray"
+              onClick={onClose}
+              disabled={isUploading}
+              className="hover:scale-105 transition-transform duration-200 bg-gray-700/50"
+            >
+              Cancel
+            </Button>
+          </Modal.Footer>
+        </motion.div>
       </Modal>
 
-      {toast.show && (
-        <div className="fixed bottom-4 right-4 z-[60]">
-          <Toast>
-            {toast.type === "success" ? (
-              <HiCheck className="h-5 w-5 text-green-600" />
-            ) : (
-              <HiX className="h-5 w-5 text-red-600" />
-            )}
-            <div className="pl-4 text-sm font-normal">{toast.message}</div>
-          </Toast>
-        </div>
-      )}
-    </>
+      <AnimatePresence>
+        {toast.show && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="fixed bottom-4 right-4 z-[60]"
+          >
+            <Toast>
+              {toast.type === "success" ? (
+                <HiCheck className="h-5 w-5 text-green-600" />
+              ) : (
+                <HiX className="h-5 w-5 text-red-600" />
+              )}
+              <div className="pl-4 text-sm font-normal">{toast.message}</div>
+            </Toast>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </AnimatePresence>
   );
 }
